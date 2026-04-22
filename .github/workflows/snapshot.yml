@@ -1,0 +1,61 @@
+name: Daily sentiment snapshot
+
+on:
+  schedule:
+    # 07:00 UTC — one hour after the Vercel cron refreshes /api/sentiment cache
+    - cron: '0 7 * * *'
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+jobs:
+  snapshot:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Fetch and slim sentiment snapshot
+        run: |
+          set -euo pipefail
+          mkdir -p data/history
+          DATE=$(date -u +%Y-%m-%d)
+          # Bypass edge cache with a timestamp
+          curl -sSf "https://ventures-portfolio-sentiment.vercel.app/api/sentiment?t=$(date +%s)" \
+            -o /tmp/full.json
+          python3 - <<EOF > "data/history/$DATE.json"
+          import json
+          with open('/tmp/full.json', 'r', encoding='utf-8') as f:
+              d = json.load(f)
+          slim = {
+              "date": "$DATE",
+              "generated_at": d["generated_at"],
+              "summary": d["summary"],
+              "companies": {
+                  c["name"]: {
+                      "score": c["score"],
+                      "count": c["count"],
+                      "pos":   c["pos"],
+                      "neu":   c["neu"],
+                      "neg":   c["neg"],
+                      "engagement": c.get("engagement", 0),
+                  }
+                  for c in d["companies"]
+              },
+          }
+          print(json.dumps(slim, indent=2, ensure_ascii=False))
+          EOF
+          echo "Wrote data/history/$DATE.json"
+          ls -lh data/history/
+
+      - name: Commit snapshot
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/history/
+          if git diff --cached --quiet; then
+            echo "No changes to commit."
+            exit 0
+          fi
+          git commit -m "chore: snapshot $(date -u +%Y-%m-%d)"
+          git push

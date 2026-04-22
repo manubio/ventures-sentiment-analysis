@@ -32,7 +32,7 @@
   }
   h1 { margin: 0; font-size: 22px; letter-spacing: 0.2px; }
   .sub { color: var(--muted); font-size: 13px; margin-top: 4px; }
-  .container { max-width: 1360px; margin: 0 auto; padding: 24px 32px 64px; }
+  .container { max-width: 1440px; margin: 0 auto; padding: 24px 32px 64px; }
   .row { display: grid; gap: 16px; }
   .kpis { grid-template-columns: repeat(5, 1fr); }
   @media (max-width: 900px) { .kpis { grid-template-columns: repeat(2, 1fr); } }
@@ -61,7 +61,8 @@
   }
   .tools button:hover { border-color: var(--accent); }
   .grid-2 { grid-template-columns: 1fr 1fr; }
-  @media (max-width: 900px) { .grid-2 { grid-template-columns: 1fr; } }
+  .grid-3 { grid-template-columns: 2fr 1fr 1fr; }
+  @media (max-width: 900px) { .grid-2, .grid-3 { grid-template-columns: 1fr; } }
   table { width: 100%; border-collapse: collapse; }
   th, td { padding: 12px 14px; text-align: left; border-bottom: 1px solid var(--border); font-size: 13px; vertical-align: top; }
   th { color: var(--muted); font-weight: 500; font-size: 11px; text-transform: uppercase; letter-spacing: 0.4px; }
@@ -81,6 +82,14 @@
   }
   .src-chip.news { color: #91c1ff; }
   .src-chip.hn   { color: #ffad6e; }
+  .loc-chip {
+    display: inline-block; font-size: 10px; padding: 1px 5px; border-radius: 3px;
+    background: var(--bg); color: var(--muted); margin-right: 3px;
+    border: 1px solid var(--border); font-variant-numeric: tabular-nums;
+  }
+  .delta-cell { font-variant-numeric: tabular-nums; font-weight: 500; }
+  .delta-up { color: var(--pos); }
+  .delta-down { color: var(--neg); }
   details summary { cursor: pointer; color: var(--muted); font-size: 12px; list-style: none; }
   details summary::-webkit-details-marker { display: none; }
   details[open] summary::before { content: "▾ "; }
@@ -105,13 +114,22 @@
   .section-title { margin: 0 0 12px; font-size: 12px; text-transform: uppercase; letter-spacing: 0.6px; color: var(--muted); }
   canvas { max-height: 280px; }
   .engagement { color: var(--accent); font-variant-numeric: tabular-nums; font-size: 12px; }
+  .mover-item {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 6px 0; border-bottom: 1px solid var(--border);
+  }
+  .mover-item:last-child { border-bottom: none; }
+  .mover-name { font-weight: 500; }
+  .empty-hist {
+    color: var(--muted); font-size: 12px; padding: 8px 0;
+  }
 </style>
 </head>
 <body>
 <header>
   <div>
     <h1>Prosus Ventures — Portfolio Sentiment</h1>
-    <div class="sub">Live sentiment across <span id="total-count">—</span> portfolio companies · Google News + Hacker News (last 12 months) · scored with VADER</div>
+    <div class="sub">Live sentiment across <span id="total-count">—</span> portfolio companies · news + HN in regional locales · VADER + business/PT/ES lexicon</div>
   </div>
   <div class="sub">Updated: <span id="generated-at">—</span> · <button onclick="load(true)" style="margin-left:8px; background:transparent; color:var(--accent); border:none; cursor:pointer;">refresh</button></div>
 </header>
@@ -120,7 +138,7 @@
 
   <div id="loader" class="loader">
     <div class="dot"></div><div class="dot"></div><div class="dot"></div>
-    <span>Fetching news &amp; Hacker News for 93 companies… first load takes 5–15s</span>
+    <span>Fetching news across 8 regional locales for 93 companies… 5–15s</span>
   </div>
 
   <div id="content" style="display:none">
@@ -133,14 +151,18 @@
       <div class="card"><div class="kpi-label">Negative</div><div class="kpi-value neg" id="k-neg">—</div><div class="kpi-sub" id="k-neg-sub"></div></div>
     </div>
 
-    <div class="row grid-2" style="margin-top:16px">
+    <div class="row grid-3" style="margin-top:16px">
       <div class="card">
         <div class="section-title">Sentiment by region</div>
         <canvas id="region-chart"></canvas>
       </div>
       <div class="card">
-        <div class="section-title">Distribution of company scores</div>
-        <canvas id="dist-chart"></canvas>
+        <div class="section-title">Biggest movers <span class="muted" id="movers-window" style="font-weight:normal; text-transform:none; letter-spacing:0"></span></div>
+        <div id="movers-up"></div>
+      </div>
+      <div class="card">
+        <div class="section-title">Falling fastest</div>
+        <div id="movers-down"></div>
       </div>
     </div>
 
@@ -155,6 +177,8 @@
         <option value="name">Name A-Z</option>
         <option value="count-desc">Coverage ↓</option>
         <option value="buzz-desc">Buzz ↓</option>
+        <option value="delta-desc">Δ ↓</option>
+        <option value="delta-asc">Δ ↑</option>
       </select>
       <span class="muted" id="filter-count" style="margin-left:auto"></span>
     </div>
@@ -166,11 +190,13 @@
             <th>Company</th>
             <th>Region</th>
             <th>Sentiment</th>
+            <th>Trend</th>
+            <th>Δ</th>
             <th>Mix</th>
-            <th>Sources</th>
+            <th>Locales</th>
             <th>Buzz</th>
             <th>Last seen</th>
-            <th>Sample headlines</th>
+            <th>Headlines</th>
           </tr>
         </thead>
         <tbody id="tbody"></tbody>
@@ -181,22 +207,37 @@
 
 <script>
 let DATA = null;
+let HIST = null;
 let regionChart = null;
-let distChart = null;
 
 async function load(force) {
   document.getElementById("loader").style.display = "flex";
   document.getElementById("content").style.display = "none";
-  const url = "/api/sentiment" + (force ? "?t=" + Date.now() : "");
+  const tag = force ? "?t=" + Date.now() : "";
   try {
-    const res = await fetch(url);
-    if (!res.ok) throw new Error("HTTP " + res.status);
-    DATA = await res.json();
+    const [live, hist] = await Promise.all([
+      fetch("/api/sentiment" + tag).then(r => { if (!r.ok) throw new Error("sentiment " + r.status); return r.json(); }),
+      fetch("/api/history").then(r => r.ok ? r.json() : {snapshots: []}).catch(() => ({snapshots: []})),
+    ]);
+    DATA = live;
+    HIST = hist.snapshots || [];
     hydrate();
   } catch (e) {
     document.getElementById("loader").innerHTML =
       '<span style="color:var(--neg)">Failed to load: ' + e.message + '</span>';
   }
+}
+
+// Build per-company score timeline: [{date, score}, ...] ordered oldest → newest,
+// including today's live score as the last point.
+function buildTimeline(companyName) {
+  const snaps = (HIST || []).slice().reverse();  // oldest first
+  const series = [];
+  for (const s of snaps) {
+    const c = (s.companies || {})[companyName];
+    if (c && typeof c.score === "number") series.push({date: s.date, score: c.score});
+  }
+  return series;
 }
 
 function hydrate() {
@@ -205,7 +246,7 @@ function hydrate() {
 
   const s = DATA.summary;
   document.getElementById("k-total").textContent = s.covered + "/" + DATA.total;
-  document.getElementById("k-total-sub").textContent = s.total_mentions.toLocaleString() + " mentions";
+  document.getElementById("k-total-sub").textContent = s.total_mentions.toLocaleString() + " mentions · " + Object.keys(s.locale_totals || {}).length + " locales";
   document.getElementById("k-avg").textContent = fmt(s.average_score);
   document.getElementById("k-avg-sub").textContent = "across covered companies";
   document.getElementById("k-pos").textContent = s.positive;
@@ -223,12 +264,54 @@ function hydrate() {
     regionSel.appendChild(opt);
   }
 
+  // Compute deltas
+  for (const c of DATA.companies) {
+    const tl = buildTimeline(c.name);
+    // Baseline = oldest snapshot within last 30 days (fallback: oldest we have)
+    const cutoff = Date.now() - 30 * 86400000;
+    const baseline = tl.find(p => new Date(p.date).getTime() >= cutoff) || tl[0];
+    if (baseline && typeof baseline.score === "number") {
+      c._delta = Number((c.score - baseline.score).toFixed(3));
+      c._baseDate = baseline.date;
+    } else {
+      c._delta = null;
+      c._baseDate = null;
+    }
+    // Full timeline including today's live score
+    c._timeline = tl.concat([{date: DATA.generated_at.slice(0,10), score: c.score}]);
+  }
+
   drawRegionChart(s.region_average);
-  drawDistChart(DATA.companies);
+  renderMovers();
   render();
 
   document.getElementById("loader").style.display = "none";
   document.getElementById("content").style.display = "block";
+}
+
+function renderMovers() {
+  const withDelta = DATA.companies.filter(c => c._delta !== null && c.count > 0);
+  const window = HIST.length > 0
+    ? "vs " + (HIST[HIST.length - 1]?.date || "earliest") + " (" + HIST.length + " snapshots)"
+    : "awaiting first snapshot";
+  document.getElementById("movers-window").textContent = "· " + window;
+
+  const up = withDelta.slice().sort((a,b) => b._delta - a._delta).slice(0, 5);
+  const down = withDelta.slice().sort((a,b) => a._delta - b._delta).slice(0, 5);
+  const noData = '<div class="empty-hist">No prior snapshots yet — daily deltas appear after the next run.</div>';
+
+  const renderList = (arr) => {
+    if (arr.length === 0 || arr.every(c => c._delta === 0)) return noData;
+    return arr.map(c => `
+      <div class="mover-item">
+        <span class="mover-name">${esc(c.name)} <span class="muted" style="font-size:11px">${esc(c.region)}</span></span>
+        <span class="delta-cell ${c._delta >= 0 ? 'delta-up' : 'delta-down'}">${fmt(c._delta)}</span>
+      </div>
+    `).join("");
+  };
+
+  document.getElementById("movers-up").innerHTML = renderList(up);
+  document.getElementById("movers-down").innerHTML = renderList(down);
 }
 
 function pct(n, total) {
@@ -238,7 +321,7 @@ function pct(n, total) {
 
 function fmt(n) {
   if (n === null || n === undefined) return "—";
-  return (n >= 0 ? "+" : "") + n.toFixed(3);
+  return (n >= 0 ? "+" : "") + Number(n).toFixed(3);
 }
 
 function fmtNum(n) {
@@ -266,6 +349,31 @@ function scoreColor(n) {
   return "var(--neu)";
 }
 
+function sparkline(points, width=80, height=22) {
+  const filtered = points.filter(p => typeof p.score === "number");
+  if (filtered.length < 2) {
+    return '<span class="muted" style="font-size:11px">—</span>';
+  }
+  const scores = filtered.map(p => p.score);
+  let min = Math.min(...scores), max = Math.max(...scores);
+  if (max - min < 0.05) { const c = (min + max) / 2; min = c - 0.05; max = c + 0.05; }
+  const range = max - min;
+  const step = filtered.length > 1 ? width / (filtered.length - 1) : 0;
+  const coords = filtered.map((p, i) =>
+    `${(i * step).toFixed(1)},${(height - ((p.score - min) / range) * height).toFixed(1)}`
+  ).join(" ");
+  const first = scores[0], last = scores[scores.length - 1];
+  const stroke = last > first + 0.02 ? "var(--pos)"
+             : last < first - 0.02 ? "var(--neg)"
+             : "var(--muted)";
+  const lastX = (filtered.length - 1) * step;
+  const lastY = height - ((last - min) / range) * height;
+  return `<svg width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" style="vertical-align:middle">
+    <polyline points="${coords}" fill="none" stroke="${stroke}" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"/>
+    <circle cx="${lastX.toFixed(1)}" cy="${lastY.toFixed(1)}" r="2" fill="${stroke}"/>
+  </svg>`;
+}
+
 function render() {
   const q = document.getElementById("q").value.trim().toLowerCase();
   const region = document.getElementById("region").value;
@@ -280,6 +388,8 @@ function render() {
   else if (sort === "name") rows.sort((a,b) => a.name.localeCompare(b.name));
   else if (sort === "count-desc") rows.sort((a,b) => b.count - a.count);
   else if (sort === "buzz-desc") rows.sort((a,b) => (b.engagement||0) - (a.engagement||0));
+  else if (sort === "delta-desc") rows.sort((a,b) => (b._delta ?? -Infinity) - (a._delta ?? -Infinity));
+  else if (sort === "delta-asc")  rows.sort((a,b) => (a._delta ??  Infinity) - (b._delta ??  Infinity));
 
   document.getElementById("filter-count").textContent = rows.length + " shown · " +
     rows.reduce((s,r) => s + r.count, 0).toLocaleString() + " mentions";
@@ -299,9 +409,10 @@ function render() {
       const col = h.compound >= 0.05 ? "var(--pos)" : (h.compound <= -0.05 ? "var(--neg)" : "var(--muted)");
       const link = h.link ? `<a href="${h.link}" target="_blank" rel="noopener">${esc(h.title)}</a>` : esc(h.title);
       const origin = h.origin === "hn" ? `<span class="src-chip hn">HN</span>` : `<span class="src-chip news">news</span>`;
+      const loc = h.locale ? `<span class="loc-chip">${esc(h.locale)}</span>` : "";
       const eng = h.engagement > 0 ? ` · <span class="engagement">${fmtNum(h.engagement)} ↑</span>` : "";
       return `<li>
-        <span style="color:${col}">●</span> ${origin}${link}
+        <span style="color:${col}">●</span> ${origin}${loc}${link}
         <span class="meta">${esc(h.source || "")} · ${fmtDate(h.pubDate)} · score ${fmt(h.compound)}${eng}</span>
       </li>`;
     }).join("");
@@ -309,6 +420,15 @@ function render() {
     const srcChips = [];
     if (bs.news) srcChips.push(`<span class="src-chip news">news ${bs.news}</span>`);
     if (bs.hn)   srcChips.push(`<span class="src-chip hn">HN ${bs.hn}</span>`);
+
+    const locChips = Object.entries(c.by_locale || {})
+      .sort((a,b) => b[1] - a[1])
+      .map(([k,v]) => `<span class="loc-chip">${esc(k)} ${v}</span>`)
+      .join("");
+
+    const deltaHtml = c._delta === null
+      ? '<span class="muted">—</span>'
+      : `<span class="delta-cell ${c._delta >= 0 ? 'delta-up' : 'delta-down'}">${fmt(c._delta)}</span>`;
 
     tr.innerHTML = `
       <td>
@@ -325,13 +445,15 @@ function render() {
           </div>
         </div>
       </td>
+      <td>${sparkline(c._timeline || [])}</td>
+      <td>${deltaHtml}</td>
       <td>
         <span class="pill-pos">${c.pos}</span> /
         <span class="muted">${c.neu}</span> /
         <span class="pill-neg">${c.neg}</span>
         <div class="muted" style="font-size:11px">n=${c.count}</div>
       </td>
-      <td>${srcChips.join("") || '<span class="muted">—</span>'}</td>
+      <td>${locChips || '<span class="muted">—</span>'}</td>
       <td>${c.engagement > 0 ? `<span class="engagement">${fmtNum(c.engagement)} ↑</span>` : '<span class="muted">—</span>'}</td>
       <td class="muted" style="font-size:12px">${fmtDate(c.last_seen)}</td>
       <td>
@@ -362,31 +484,6 @@ function drawRegionChart(regionAvg) {
       scales: {
         x: { suggestedMin: -1, suggestedMax: 1, grid: { color: "#24304f" }, ticks: { color: "#8a94b4" } },
         y: { grid: { display: false }, ticks: { color: "#e8ecf5" } }
-      },
-      maintainAspectRatio: false
-    }
-  });
-}
-
-function drawDistChart(companies) {
-  const bins = [0,0,0,0,0,0,0,0,0,0];
-  const labels = ["-1/-0.8","-0.8/-0.6","-0.6/-0.4","-0.4/-0.2","-0.2/0","0/0.2","0.2/0.4","0.4/0.6","0.6/0.8","0.8/1"];
-  for (const c of companies) {
-    if (c.count === 0) continue;
-    let i = Math.min(9, Math.max(0, Math.floor((c.score + 1) * 5)));
-    bins[i]++;
-  }
-  const colors = labels.map((_, i) => i < 4 ? "#e35e5e" : (i === 4 || i === 5 ? "#8a94b4" : "#2fc27a"));
-
-  if (distChart) distChart.destroy();
-  distChart = new Chart(document.getElementById("dist-chart"), {
-    type: "bar",
-    data: { labels, datasets: [{ data: bins, backgroundColor: colors, borderRadius: 4 }] },
-    options: {
-      plugins: { legend: { display: false } },
-      scales: {
-        x: { grid: { display: false }, ticks: { color: "#8a94b4", maxRotation: 45, minRotation: 45 } },
-        y: { beginAtZero: true, grid: { color: "#24304f" }, ticks: { color: "#8a94b4", stepSize: 1 } }
       },
       maintainAspectRatio: false
     }
