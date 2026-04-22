@@ -1,97 +1,700 @@
 {
   "companies": [
-    {"name": "Meesho", "website": "meesho.com", "region": "India", "description": "E-commerce marketplace"},
-    {"name": "Urban Company", "website": "urbancompany.com", "region": "India", "description": "Home services marketplace"},
-    {"name": "Vastu", "website": "vastuhfc.com", "region": "India", "description": "Retail credit platform", "search": "\"Vastu Housing Finance\""},
-    {"name": "Captain Fresh", "website": "captainfresh.in", "region": "India", "description": "B2B animal protein marketplace"},
-    {"name": "DeHaat", "website": "agrevolution.in", "region": "India", "description": "Agri-tech platform"},
-    {"name": "Mensa Brands", "website": "mensabrands.com", "region": "India", "description": "D2C brand aggregator"},
-    {"name": "Vegrow", "website": "vegrow.in", "region": "India", "description": "B2B fruit marketplace"},
-    {"name": "Wiom", "website": "wiom.in", "region": "India", "description": "Home internet platform"},
-    {"name": "Spendflo", "website": "spendflo.com", "region": "India", "description": "SaaS procurement"},
-    {"name": "Lyskraft", "website": "lyskraft.com", "region": "India", "description": "Women's fashion platform"},
-    {"name": "Equal", "website": "equal.in", "region": "India", "description": "Identity verification", "search": "\"Equal.in\" OR \"Equal\" identity India"},
-    {"name": "PharmEasy", "website": "pharmeasy.in", "region": "India", "description": "Digital pharmacy"},
-    {"name": "ElasticRun", "website": "elasticrun.in", "region": "India", "description": "Rural B2B commerce"},
-    {"name": "Virgio", "website": "virgio.com", "region": "India", "description": "Sustainable fashion tech"},
-    {"name": "Corti", "website": "corti.ai", "region": "EU", "description": "AI co-pilot for healthcare", "search": "\"Corti.ai\""},
-    {"name": "Fundamental Research Labs", "website": "altera.al", "region": "US", "description": "Autonomous AI agents", "search": "\"Fundamental Research Labs\" OR \"Altera AI\""},
-    {"name": "Lastro", "website": "lastro.com", "region": "LatAm", "description": "AI proptech for brokerages", "search": "\"Lastro\" proptech"},
-    {"name": "Ema", "website": "ema.co", "region": "India", "description": "Enterprise AI assistant", "search": "\"Ema.co\" OR \"Ema\" AI employee"},
-    {"name": "Intella", "website": "intella.io", "region": "GCC", "description": "Arabic speech intelligence", "search": "\"Intella\" Arabic speech"},
-    {"name": "Modelcode.ai", "website": "modelcode.ai", "region": "US", "description": "AI code migration", "search": "\"Modelcode.ai\""},
-    {"name": "Voa Health", "website": "voahealth.com", "region": "LatAm", "description": "AI for doctor workflows"},
-    {"name": "Arivihan", "website": "arivihan.com", "region": "India", "description": "AI tutor"},
-    {"name": "Emergent", "website": "emergent.ai", "region": "India", "description": "GenAI app builder", "search": "\"Emergent.ai\""},
-    {"name": "Ursula", "website": "ursula.ai", "region": "LatAm", "description": "AI characters for games", "search": "\"Ursula.ai\""},
-    {"name": "Spotdraft", "website": "spotdraft.com", "region": "India", "description": "Contract management AI"},
-    {"name": "Neara", "website": "neara.com", "region": "Australia", "description": "3D grid simulation", "search": "\"Neara\" utilities simulation"},
-    {"name": "Martian", "website": "withmartian.com", "region": "US", "description": "LLM router", "search": "\"withmartian\" OR \"Martian\" LLM router"},
-    {"name": "Detect Technologies", "website": "detecttechnologies.com", "region": "India", "description": "Industrial AI safety"},
-    {"name": "FiberSense", "website": "fibersense.com", "region": "Australia", "description": "Fiber optic sensing"},
-    {"name": "Flexion", "website": "flexion.io", "region": "EU", "description": "Humanoid robot foundation models", "search": "\"Flexion.io\" robotics"},
-    {"name": "Unseen", "website": "unseen.com", "region": "Australia", "description": "AI for commercial real estate", "search": "\"Unseen\" commercial real estate AI"},
-    {"name": "zypl", "website": "zypl.ai", "region": "GCC", "description": "Synthetic data for AI", "search": "\"zypl.ai\""},
-    {"name": "Mango Sciences", "website": "mangosciences.com", "region": "India", "description": "Cancer data science"},
-    {"name": "Deccan AI", "website": "deccan.ai", "region": "India", "description": "AI data annotation"},
-    {"name": "Orbii", "website": "orbii.ai", "region": "GCC", "description": "B2B credit analytics", "search": "\"Orbii.ai\""},
-    {"name": "Code Karma", "website": "codekarma.io", "region": "India", "description": "Dev productivity AI", "search": "\"Code Karma\" developer"},
-    {"name": "PromptArmor", "website": "promptarmor.com", "region": "US", "description": "LLM security"},
-    {"name": "Omnea", "website": "omnea.co", "region": "EU", "description": "AI procurement orchestration"},
-    {"name": "Luzia", "website": "luzia.com", "region": "LatAm", "description": "Conversational AI"},
-    {"name": "Taktile", "website": "taktile.com", "region": "EU", "description": "Risk decision workflows"},
-    {"name": "qeen.ai", "website": "qeen.ai", "region": "GCC", "description": "AI e-commerce OS"},
-    {"name": "Brainfish", "website": "brainfish.ai", "region": "Australia", "description": "Agentic customer support", "search": "\"Brainfish.ai\""},
-    {"name": "Anecdote", "website": "anecdote.ai", "region": "GCC", "description": "CX management AI", "search": "\"Anecdote.ai\" OR \"Anecdote\" Clarity CX"},
-    {"name": "Zapia", "website": "zapia.com", "region": "LatAm", "description": "WhatsApp commerce AI"},
-    {"name": "Soku", "website": "soku.ai", "region": "US", "description": "AI ad management", "search": "\"Soku.ai\" OR \"Abotify\" OR \"Nexad\""},
-    {"name": "Advolve", "website": "advolve.ai", "region": "LatAm", "description": "AI advertising", "search": "\"Advolve.ai\""},
-    {"name": "CuspAI", "website": "cusp.ai", "region": "EU", "description": "GenAI for materials", "search": "\"CuspAI\" OR \"Cusp AI\" materials"},
-    {"name": "Tierra", "website": "tierrabiosciences.com", "region": "US", "description": "Engineered proteins", "search": "\"Tierra Biosciences\""},
-    {"name": "Biome Makers", "website": "biomemakers.com", "region": "US", "description": "Soil biology analytics"},
-    {"name": "Constantinople", "website": "constantinople.com", "region": "Australia", "description": "Banking SaaS infrastructure", "search": "\"Constantinople\" banking SaaS"},
-    {"name": "watchTowr", "website": "watchtowr.com", "region": "SE Asia", "description": "Attack surface security"},
-    {"name": "Plerion", "website": "plerion.com", "region": "Australia", "description": "Cloud security platform"},
-    {"name": "Recur", "website": "recur.com", "region": "US", "description": "Vertical SaaS acquirer", "search": "\"Recur.com\" SaaS"},
-    {"name": "Honor", "website": "joinhonor.com", "region": "US", "description": "Home care operations", "search": "\"Honor\" home care"},
-    {"name": "Superside", "website": "superside.com", "region": "EU", "description": "Design as a service"},
-    {"name": "BandLab", "website": "bandlab.com", "region": "SE Asia", "description": "Social music platform"},
-    {"name": "SILQ", "website": "silq.com", "region": "Other", "description": "B2B commerce platform", "search": "\"SILQ\" OR \"ShopUp Sary\""},
-    {"name": "Kismet", "website": "kismet.com", "region": "Australia", "description": "Care marketplace", "search": "\"Kismet\" care marketplace Australia"},
-    {"name": "Avant Arte", "website": "avantarte.com", "region": "EU", "description": "Online art marketplace"},
-    {"name": "Beauty Haul", "website": "beautyhaul.com", "region": "SE Asia", "description": "Indonesia beauty e-commerce"},
-    {"name": "Mevo", "website": "mevo.com.br", "region": "LatAm", "description": "Digital prescription pharmacy", "search": "\"Mevo\" Brazil pharmacy"},
-    {"name": "Dott", "website": "ridedott.com", "region": "EU", "description": "Micromobility operator", "search": "\"Ride Dott\" OR \"Dott\" scooter Europe"},
-    {"name": "99 Minutos", "website": "99minutos.com", "region": "LatAm", "description": "Last-mile delivery"},
-    {"name": "Shipper", "website": "shipper.id", "region": "SE Asia", "description": "Indonesia logistics", "search": "\"Shipper\" Indonesia logistics"},
-    {"name": "Bykea", "website": "bykea.com", "region": "Other", "description": "Pakistan ride-hailing"},
-    {"name": "Moove", "website": "moove.io", "region": "LatAm", "description": "Mobility fintech", "search": "\"Moove\" mobility fintech"},
-    {"name": "Bilt", "website": "biltrewards.com", "region": "US", "description": "Rewards on rent", "search": "\"Bilt Rewards\""},
-    {"name": "Klar", "website": "klar.mx", "region": "LatAm", "description": "Mexico neobank", "search": "\"Klar\" Mexico fintech"},
-    {"name": "Endowus", "website": "endowus.com", "region": "SE Asia", "description": "Wealth platform Singapore"},
-    {"name": "Stockbit", "website": "stockbit.com", "region": "SE Asia", "description": "Indonesia investing"},
-    {"name": "Rain", "website": "rain.com", "region": "US", "description": "Earned wage access", "search": "\"Rain\" earned wage access"},
-    {"name": "Onsi", "website": "onsi.com", "region": "EU", "description": "Worker benefits platform", "search": "\"Onsi\" worker benefits"},
-    {"name": "Azos", "website": "azos.com.br", "region": "LatAm", "description": "Brazil life insurance", "search": "\"Azos\" Brazil insurance"},
-    {"name": "Thndr", "website": "thndr.app", "region": "GCC", "description": "Egypt investing app"},
-    {"name": "Chocolate", "website": "chocolateplatform.com", "region": "SE Asia", "description": "Singapore neobank", "search": "\"Chocolate Finance\" OR \"Chocolate platform\" Singapore"},
-    {"name": "Zest Equity", "website": "zestequity.com", "region": "GCC", "description": "Alternative assets infra"},
-    {"name": "Iniciador", "website": "iniciador.com.br", "region": "LatAm", "description": "Brazil open finance PISP"},
-    {"name": "Immutable", "website": "immutable.com", "region": "Australia", "description": "NFT platform", "search": "\"Immutable\" NFT blockchain"},
-    {"name": "Tonik", "website": "tonikbank.com", "region": "SE Asia", "description": "Philippines neobank", "search": "\"Tonik\" Philippines bank"},
-    {"name": "DappRadar", "website": "dappradar.com", "region": "EU", "description": "dApp analytics"},
-    {"name": "Every Company", "website": "every.com", "region": "US", "description": "Animal-free proteins", "search": "\"The EVERY Company\" OR \"Clara Foods\""},
-    {"name": "Prime Roots", "website": "primeroots.com", "region": "US", "description": "Plant-based meat"},
-    {"name": "GrowXCD", "website": "growxcd.com", "region": "India", "description": "MSME lending NBFC"},
-    {"name": "Qureos", "website": "qureos.com", "region": "GCC", "description": "AI hiring platform"},
-    {"name": "Neuralace", "website": "neuralace.com", "region": "US", "description": "Non-invasive BCI", "search": "\"Neuralace\" OR \"AtomsX\" brain computer"},
-    {"name": "BeConfident", "website": "beconfident.com", "region": "LatAm", "description": "AI language learning", "search": "\"BeConfident\" language learning"},
-    {"name": "Incognia", "website": "incognia.com", "region": "LatAm", "description": "Location-based fraud prevention"},
-    {"name": "Moova", "website": "moova.io", "region": "LatAm", "description": "Last-mile logistics", "search": "\"Moova\" logistics LatAm"},
-    {"name": "Sandbox", "website": "sandbox.game", "region": "LatAm", "description": "Digital learning brands", "search": "\"Sandbox\" PlayKids OR CoolMathGames"},
-    {"name": "Platzi", "website": "platzi.com", "region": "LatAm", "description": "Online tech education"},
-    {"name": "Creditas", "website": "creditas.com", "region": "LatAm", "description": "Secured lending fintech"},
-    {"name": "Treinta", "website": "treinta.co", "region": "LatAm", "description": "SME digital ledger"},
-    {"name": "Wayflyer", "website": "wayflyer.com", "region": "EU", "description": "E-commerce revenue financing"}
+    {
+      "name": "Meesho",
+      "website": "meesho.com",
+      "region": "India",
+      "description": "E-commerce marketplace",
+      "type": "B2C/C2C"
+    },
+    {
+      "name": "Urban Company",
+      "website": "urbancompany.com",
+      "region": "India",
+      "description": "Home services marketplace",
+      "type": "B2C"
+    },
+    {
+      "name": "Vastu",
+      "website": "vastuhfc.com",
+      "region": "India",
+      "description": "Retail credit platform",
+      "search": "\"Vastu Housing Finance\"",
+      "type": "B2C"
+    },
+    {
+      "name": "Captain Fresh",
+      "website": "captainfresh.in",
+      "region": "India",
+      "description": "B2B animal protein marketplace",
+      "type": "B2B2C"
+    },
+    {
+      "name": "DeHaat",
+      "website": "agrevolution.in",
+      "region": "India",
+      "description": "Agri-tech platform",
+      "type": "B2B"
+    },
+    {
+      "name": "Mensa Brands",
+      "website": "mensabrands.com",
+      "region": "India",
+      "description": "D2C brand aggregator",
+      "type": "B2C"
+    },
+    {
+      "name": "Vegrow",
+      "website": "vegrow.in",
+      "region": "India",
+      "description": "B2B fruit marketplace",
+      "type": "B2B"
+    },
+    {
+      "name": "Wiom",
+      "website": "wiom.in",
+      "region": "India",
+      "description": "Home internet platform",
+      "type": "B2C"
+    },
+    {
+      "name": "Spendflo",
+      "website": "spendflo.com",
+      "region": "India",
+      "description": "SaaS procurement",
+      "type": "B2B"
+    },
+    {
+      "name": "Lyskraft",
+      "website": "lyskraft.com",
+      "region": "India",
+      "description": "Women's fashion platform",
+      "type": "B2C"
+    },
+    {
+      "name": "Equal",
+      "website": "equal.in",
+      "region": "India",
+      "description": "Identity verification",
+      "search": "\"Equal.in\" OR \"Equal\" identity India",
+      "type": "B2B"
+    },
+    {
+      "name": "PharmEasy",
+      "website": "pharmeasy.in",
+      "region": "India",
+      "description": "Digital pharmacy",
+      "type": "B2C"
+    },
+    {
+      "name": "ElasticRun",
+      "website": "elasticrun.in",
+      "region": "India",
+      "description": "Rural B2B commerce",
+      "type": "B2B/B2C"
+    },
+    {
+      "name": "Virgio",
+      "website": "virgio.com",
+      "region": "India",
+      "description": "Sustainable fashion tech",
+      "type": "B2B"
+    },
+    {
+      "name": "Corti",
+      "website": "corti.ai",
+      "region": "EU",
+      "description": "AI co-pilot for healthcare",
+      "search": "\"Corti.ai\"",
+      "type": "Other/Ambiguous"
+    },
+    {
+      "name": "Fundamental Research Labs",
+      "website": "altera.al",
+      "region": "US",
+      "description": "Autonomous AI agents",
+      "search": "\"Fundamental Research Labs\" OR \"Altera AI\"",
+      "type": "Other/Ambiguous"
+    },
+    {
+      "name": "Lastro",
+      "website": "lastro.com",
+      "region": "LatAm",
+      "description": "AI proptech for brokerages",
+      "search": "\"Lastro\" proptech",
+      "type": "B2B"
+    },
+    {
+      "name": "Ema",
+      "website": "ema.co",
+      "region": "India",
+      "description": "Enterprise AI assistant",
+      "search": "\"Ema.co\" OR \"Ema\" AI employee",
+      "type": "B2B/B2C"
+    },
+    {
+      "name": "Intella",
+      "website": "intella.io",
+      "region": "GCC",
+      "description": "Arabic speech intelligence",
+      "search": "\"Intella\" Arabic speech",
+      "type": "Other/Ambiguous"
+    },
+    {
+      "name": "Modelcode.ai",
+      "website": "modelcode.ai",
+      "region": "US",
+      "description": "AI code migration",
+      "search": "\"Modelcode.ai\"",
+      "type": "B2B"
+    },
+    {
+      "name": "Voa Health",
+      "website": "voahealth.com",
+      "region": "LatAm",
+      "description": "AI for doctor workflows",
+      "type": "B2B/B2C"
+    },
+    {
+      "name": "Arivihan",
+      "website": "arivihan.com",
+      "region": "India",
+      "description": "AI tutor",
+      "type": "Other/Ambiguous"
+    },
+    {
+      "name": "Emergent",
+      "website": "emergent.ai",
+      "region": "India",
+      "description": "GenAI app builder",
+      "search": "\"Emergent.ai\"",
+      "type": "B2B"
+    },
+    {
+      "name": "Ursula",
+      "website": "ursula.ai",
+      "region": "LatAm",
+      "description": "AI characters for games",
+      "search": "\"Ursula.ai\"",
+      "type": "Other/Ambiguous"
+    },
+    {
+      "name": "Spotdraft",
+      "website": "spotdraft.com",
+      "region": "India",
+      "description": "Contract management AI",
+      "type": "Other/Ambiguous"
+    },
+    {
+      "name": "Neara",
+      "website": "neara.com",
+      "region": "Australia",
+      "description": "3D grid simulation",
+      "search": "\"Neara\" utilities simulation",
+      "type": "B2B/B2C"
+    },
+    {
+      "name": "Martian",
+      "website": "withmartian.com",
+      "region": "US",
+      "description": "LLM router",
+      "search": "\"withmartian\" OR \"Martian\" LLM router",
+      "type": "Other/Ambiguous"
+    },
+    {
+      "name": "Detect Technologies",
+      "website": "detecttechnologies.com",
+      "region": "India",
+      "description": "Industrial AI safety",
+      "type": "B2B"
+    },
+    {
+      "name": "FiberSense",
+      "website": "fibersense.com",
+      "region": "Australia",
+      "description": "Fiber optic sensing",
+      "type": "B2B/B2C"
+    },
+    {
+      "name": "Flexion",
+      "website": "flexion.io",
+      "region": "EU",
+      "description": "Humanoid robot foundation models",
+      "search": "\"Flexion.io\" robotics",
+      "type": "Other/Ambiguous"
+    },
+    {
+      "name": "Unseen",
+      "website": "unseen.com",
+      "region": "Australia",
+      "description": "AI for commercial real estate",
+      "search": "\"Unseen\" commercial real estate AI",
+      "type": "B2B/B2C"
+    },
+    {
+      "name": "zypl",
+      "website": "zypl.ai",
+      "region": "GCC",
+      "description": "Synthetic data for AI",
+      "search": "\"zypl.ai\"",
+      "type": "Other/Ambiguous"
+    },
+    {
+      "name": "Mango Sciences",
+      "website": "mangosciences.com",
+      "region": "India",
+      "description": "Cancer data science",
+      "type": "B2C"
+    },
+    {
+      "name": "Deccan AI",
+      "website": "deccan.ai",
+      "region": "India",
+      "description": "AI data annotation",
+      "type": "B2B/B2C"
+    },
+    {
+      "name": "Orbii",
+      "website": "orbii.ai",
+      "region": "GCC",
+      "description": "B2B credit analytics",
+      "search": "\"Orbii.ai\"",
+      "type": "B2B"
+    },
+    {
+      "name": "Code Karma",
+      "website": "codekarma.io",
+      "region": "India",
+      "description": "Dev productivity AI",
+      "search": "\"Code Karma\" developer",
+      "type": "Other/Ambiguous"
+    },
+    {
+      "name": "PromptArmor",
+      "website": "promptarmor.com",
+      "region": "US",
+      "description": "LLM security",
+      "type": "Other/Ambiguous"
+    },
+    {
+      "name": "Omnea",
+      "website": "omnea.co",
+      "region": "EU",
+      "description": "AI procurement orchestration",
+      "type": "B2B/B2C"
+    },
+    {
+      "name": "Luzia",
+      "website": "luzia.com",
+      "region": "LatAm",
+      "description": "Conversational AI",
+      "type": "B2C"
+    },
+    {
+      "name": "Taktile",
+      "website": "taktile.com",
+      "region": "EU",
+      "description": "Risk decision workflows",
+      "type": "B2B/B2C"
+    },
+    {
+      "name": "qeen.ai",
+      "website": "qeen.ai",
+      "region": "GCC",
+      "description": "AI e-commerce OS",
+      "type": "Other/Ambiguous"
+    },
+    {
+      "name": "Brainfish",
+      "website": "brainfish.ai",
+      "region": "Australia",
+      "description": "Agentic customer support",
+      "search": "\"Brainfish.ai\"",
+      "type": "B2C"
+    },
+    {
+      "name": "Anecdote",
+      "website": "anecdote.ai",
+      "region": "GCC",
+      "description": "CX management AI",
+      "search": "\"Anecdote.ai\" OR \"Anecdote\" Clarity CX",
+      "type": "B2C"
+    },
+    {
+      "name": "Zapia",
+      "website": "zapia.com",
+      "region": "LatAm",
+      "description": "WhatsApp commerce AI",
+      "type": "B2C"
+    },
+    {
+      "name": "Soku",
+      "website": "soku.ai",
+      "region": "US",
+      "description": "AI ad management",
+      "search": "\"Soku.ai\" OR \"Abotify\" OR \"Nexad\"",
+      "type": "B2B"
+    },
+    {
+      "name": "Advolve",
+      "website": "advolve.ai",
+      "region": "LatAm",
+      "description": "AI advertising",
+      "search": "\"Advolve.ai\"",
+      "type": "Other/Ambiguous"
+    },
+    {
+      "name": "CuspAI",
+      "website": "cusp.ai",
+      "region": "EU",
+      "description": "GenAI for materials",
+      "search": "\"CuspAI\" OR \"Cusp AI\" materials",
+      "type": "B2B/B2C"
+    },
+    {
+      "name": "Tierra",
+      "website": "tierrabiosciences.com",
+      "region": "US",
+      "description": "Engineered proteins",
+      "search": "\"Tierra Biosciences\"",
+      "type": "Other/Ambiguous"
+    },
+    {
+      "name": "Biome Makers",
+      "website": "biomemakers.com",
+      "region": "US",
+      "description": "Soil biology analytics",
+      "type": "Other/Ambiguous"
+    },
+    {
+      "name": "Constantinople",
+      "website": "constantinople.com",
+      "region": "Australia",
+      "description": "Banking SaaS infrastructure",
+      "search": "\"Constantinople\" banking SaaS",
+      "type": "B2B/B2C"
+    },
+    {
+      "name": "watchTowr",
+      "website": "watchtowr.com",
+      "region": "SE Asia",
+      "description": "Attack surface security",
+      "type": "Other/Ambiguous"
+    },
+    {
+      "name": "Plerion",
+      "website": "plerion.com",
+      "region": "Australia",
+      "description": "Cloud security platform",
+      "type": "B2B/B2C"
+    },
+    {
+      "name": "Recur",
+      "website": "recur.com",
+      "region": "US",
+      "description": "Vertical SaaS acquirer",
+      "search": "\"Recur.com\" SaaS",
+      "type": "B2B"
+    },
+    {
+      "name": "Honor",
+      "website": "joinhonor.com",
+      "region": "US",
+      "description": "Home care operations",
+      "search": "\"Honor\" home care",
+      "type": "B2B"
+    },
+    {
+      "name": "Superside",
+      "website": "superside.com",
+      "region": "EU",
+      "description": "Design as a service",
+      "type": "B2B"
+    },
+    {
+      "name": "BandLab",
+      "website": "bandlab.com",
+      "region": "SE Asia",
+      "description": "Social music platform",
+      "type": "B2B/B2C"
+    },
+    {
+      "name": "SILQ",
+      "website": "silq.com",
+      "region": "Other",
+      "description": "B2B commerce platform",
+      "search": "\"SILQ\" OR \"ShopUp Sary\"",
+      "type": "B2B"
+    },
+    {
+      "name": "Kismet",
+      "website": "kismet.com",
+      "region": "Australia",
+      "description": "Care marketplace",
+      "search": "\"Kismet\" care marketplace Australia",
+      "type": "B2B/B2C"
+    },
+    {
+      "name": "Avant Arte",
+      "website": "avantarte.com",
+      "region": "EU",
+      "description": "Online art marketplace",
+      "type": "B2C"
+    },
+    {
+      "name": "Beauty Haul",
+      "website": "beautyhaul.com",
+      "region": "SE Asia",
+      "description": "Indonesia beauty e-commerce",
+      "type": "B2B/B2C"
+    },
+    {
+      "name": "Mevo",
+      "website": "mevo.com.br",
+      "region": "LatAm",
+      "description": "Digital prescription pharmacy",
+      "search": "\"Mevo\" Brazil pharmacy",
+      "type": "B2B/B2C"
+    },
+    {
+      "name": "Dott",
+      "website": "ridedott.com",
+      "region": "EU",
+      "description": "Micromobility operator",
+      "search": "\"Ride Dott\" OR \"Dott\" scooter Europe",
+      "type": "Other/Ambiguous"
+    },
+    {
+      "name": "99 Minutos",
+      "website": "99minutos.com",
+      "region": "LatAm",
+      "description": "Last-mile delivery",
+      "type": "Other/Ambiguous"
+    },
+    {
+      "name": "Shipper",
+      "website": "shipper.id",
+      "region": "SE Asia",
+      "description": "Indonesia logistics",
+      "search": "\"Shipper\" Indonesia logistics",
+      "type": "B2B"
+    },
+    {
+      "name": "Bykea",
+      "website": "bykea.com",
+      "region": "Other",
+      "description": "Pakistan ride-hailing",
+      "type": "B2B"
+    },
+    {
+      "name": "Moove",
+      "website": "moove.io",
+      "region": "LatAm",
+      "description": "Mobility fintech",
+      "search": "\"Moove\" mobility fintech",
+      "type": "B2B"
+    },
+    {
+      "name": "Bilt",
+      "website": "biltrewards.com",
+      "region": "US",
+      "description": "Rewards on rent",
+      "search": "\"Bilt Rewards\"",
+      "type": "Other/Ambiguous"
+    },
+    {
+      "name": "Klar",
+      "website": "klar.mx",
+      "region": "LatAm",
+      "description": "Mexico neobank",
+      "search": "\"Klar\" Mexico fintech",
+      "type": "Other/Ambiguous"
+    },
+    {
+      "name": "Endowus",
+      "website": "endowus.com",
+      "region": "SE Asia",
+      "description": "Wealth platform Singapore",
+      "type": "B2B/B2C"
+    },
+    {
+      "name": "Stockbit",
+      "website": "stockbit.com",
+      "region": "SE Asia",
+      "description": "Indonesia investing",
+      "type": "B2C"
+    },
+    {
+      "name": "Rain",
+      "website": "rain.com",
+      "region": "US",
+      "description": "Earned wage access",
+      "search": "\"Rain\" earned wage access",
+      "type": "Other/Ambiguous"
+    },
+    {
+      "name": "Onsi",
+      "website": "onsi.com",
+      "region": "EU",
+      "description": "Worker benefits platform",
+      "search": "\"Onsi\" worker benefits",
+      "type": "B2B/B2C"
+    },
+    {
+      "name": "Azos",
+      "website": "azos.com.br",
+      "region": "LatAm",
+      "description": "Brazil life insurance",
+      "search": "\"Azos\" Brazil insurance",
+      "type": "B2C"
+    },
+    {
+      "name": "Thndr",
+      "website": "thndr.app",
+      "region": "GCC",
+      "description": "Egypt investing app",
+      "type": "B2B/B2C"
+    },
+    {
+      "name": "Chocolate",
+      "website": "chocolateplatform.com",
+      "region": "SE Asia",
+      "description": "Singapore neobank",
+      "search": "\"Chocolate Finance\" OR \"Chocolate platform\" Singapore",
+      "type": "B2C"
+    },
+    {
+      "name": "Zest Equity",
+      "website": "zestequity.com",
+      "region": "GCC",
+      "description": "Alternative assets infra",
+      "type": "Other/Ambiguous"
+    },
+    {
+      "name": "Iniciador",
+      "website": "iniciador.com.br",
+      "region": "LatAm",
+      "description": "Brazil open finance PISP",
+      "type": "B2B"
+    },
+    {
+      "name": "Immutable",
+      "website": "immutable.com",
+      "region": "Australia",
+      "description": "NFT platform",
+      "search": "\"Immutable\" NFT blockchain",
+      "type": "B2B/B2C"
+    },
+    {
+      "name": "Tonik",
+      "website": "tonikbank.com",
+      "region": "SE Asia",
+      "description": "Philippines neobank",
+      "search": "\"Tonik\" Philippines bank",
+      "type": "B2C"
+    },
+    {
+      "name": "DappRadar",
+      "website": "dappradar.com",
+      "region": "EU",
+      "description": "dApp analytics",
+      "type": "B2B/B2C"
+    },
+    {
+      "name": "Every Company",
+      "website": "every.com",
+      "region": "US",
+      "description": "Animal-free proteins",
+      "search": "\"The EVERY Company\" OR \"Clara Foods\"",
+      "type": "Other/Ambiguous"
+    },
+    {
+      "name": "Prime Roots",
+      "website": "primeroots.com",
+      "region": "US",
+      "description": "Plant-based meat",
+      "type": "Other/Ambiguous"
+    },
+    {
+      "name": "GrowXCD",
+      "website": "growxcd.com",
+      "region": "India",
+      "description": "MSME lending NBFC",
+      "type": "B2C"
+    },
+    {
+      "name": "Qureos",
+      "website": "qureos.com",
+      "region": "GCC",
+      "description": "AI hiring platform",
+      "type": "B2B/B2C"
+    },
+    {
+      "name": "Neuralace",
+      "website": "neuralace.com",
+      "region": "US",
+      "description": "Non-invasive BCI",
+      "search": "\"Neuralace\" OR \"AtomsX\" brain computer",
+      "type": "Other/Ambiguous"
+    },
+    {
+      "name": "BeConfident",
+      "website": "beconfident.com",
+      "region": "LatAm",
+      "description": "AI language learning",
+      "search": "\"BeConfident\" language learning",
+      "type": "B2C"
+    },
+    {
+      "name": "Incognia",
+      "website": "incognia.com",
+      "region": "LatAm",
+      "description": "Location-based fraud prevention",
+      "type": "B2B"
+    },
+    {
+      "name": "Moova",
+      "website": "moova.io",
+      "region": "LatAm",
+      "description": "Last-mile logistics",
+      "search": "\"Moova\" logistics LatAm",
+      "type": "B2C/B2B"
+    },
+    {
+      "name": "Sandbox",
+      "website": "sandbox.game",
+      "region": "LatAm",
+      "description": "Digital learning brands",
+      "search": "\"Sandbox\" PlayKids OR CoolMathGames",
+      "type": "B2B"
+    },
+    {
+      "name": "Platzi",
+      "website": "platzi.com",
+      "region": "LatAm",
+      "description": "Online tech education",
+      "type": "B2C/B2B"
+    },
+    {
+      "name": "Creditas",
+      "website": "creditas.com",
+      "region": "LatAm",
+      "description": "Secured lending fintech",
+      "type": "B2C"
+    },
+    {
+      "name": "Treinta",
+      "website": "treinta.co",
+      "region": "LatAm",
+      "description": "SME digital ledger",
+      "type": "B2B"
+    },
+    {
+      "name": "Wayflyer",
+      "website": "wayflyer.com",
+      "region": "EU",
+      "description": "E-commerce revenue financing",
+      "type": "B2B"
+    }
   ]
 }

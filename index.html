@@ -18,6 +18,10 @@
     --neg: #e35e5e;
     --neu: #b5b9c7;
     --border: #24304f;
+    --tier1: #ffc95c;   /* gold for trusted */
+    --tier3: #555e7a;   /* dim for low */
+    --star: #ffd873;
+    --new: #6ea8ff;
   }
   * { box-sizing: border-box; }
   html, body { margin: 0; padding: 0; background: var(--bg); color: var(--text);
@@ -34,13 +38,17 @@
   h2 { margin: 0 0 12px; font-size: 16px; }
   h3 { margin: 18px 0 8px; font-size: 13px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.6px; }
   .sub { color: var(--muted); font-size: 13px; margin-top: 4px; }
-  .container { max-width: 1440px; margin: 0 auto; padding: 24px 32px 64px; }
+  .container { max-width: 1460px; margin: 0 auto; padding: 24px 32px 64px; }
   .row { display: grid; gap: 16px; }
   .kpis { grid-template-columns: repeat(5, 1fr); }
   @media (max-width: 900px) { .kpis { grid-template-columns: repeat(2, 1fr); } }
   .card {
     background: var(--panel); border: 1px solid var(--border); border-radius: 12px;
     padding: 16px;
+  }
+  .card-head {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 12px; gap: 12px; flex-wrap: wrap;
   }
   .kpi-label { color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: 0.6px; }
   .kpi-value { font-size: 26px; font-weight: 600; margin-top: 6px; }
@@ -60,23 +68,30 @@
   .tools button {
     background: var(--panel-2); color: var(--text); border: 1px solid var(--border);
     border-radius: 8px; padding: 8px 12px; font-size: 13px; cursor: pointer;
+    display: inline-flex; align-items: center; gap: 4px;
   }
   .tools button:hover { border-color: var(--accent); }
+  .tools button.active { border-color: var(--accent); color: var(--accent); }
+  .tools button.toggle-star.active { color: var(--star); border-color: var(--star); }
   .grid-2 { grid-template-columns: 1fr 1fr; }
   .grid-3 { grid-template-columns: 2fr 1fr 1fr; }
   @media (max-width: 900px) { .grid-2, .grid-3 { grid-template-columns: 1fr; } }
   table { width: 100%; border-collapse: collapse; }
-  th, td { padding: 12px 14px; text-align: left; border-bottom: 1px solid var(--border); font-size: 13px; vertical-align: top; }
+  th, td { padding: 12px 10px; text-align: left; border-bottom: 1px solid var(--border); font-size: 13px; vertical-align: top; }
   th { color: var(--muted); font-weight: 500; font-size: 11px; text-transform: uppercase; letter-spacing: 0.4px; }
   tr.company { cursor: pointer; transition: background 0.15s; }
   tr.company:hover { background: var(--panel-2); }
-  .score-cell { display: flex; align-items: center; gap: 8px; min-width: 170px; }
-  .bar { position: relative; width: 110px; height: 8px; border-radius: 4px; background: var(--panel-2); overflow: hidden; }
+  tr.has-new { box-shadow: inset 3px 0 0 var(--new); }
+  .score-cell { display: flex; align-items: center; gap: 8px; min-width: 160px; }
+  .bar { position: relative; width: 100px; height: 8px; border-radius: 4px; background: var(--panel-2); overflow: hidden; }
   .bar .fill { position: absolute; top: 0; bottom: 0; }
   .score-num { font-variant-numeric: tabular-nums; min-width: 48px; font-weight: 600; }
   .badge {
     display: inline-block; font-size: 11px; padding: 2px 8px; border-radius: 999px;
     background: var(--panel-2); color: var(--muted); border: 1px solid var(--border);
+  }
+  .badge.type {
+    font-size: 10px; padding: 1px 6px; margin-left: 4px;
   }
   .src-chip {
     display: inline-block; font-size: 10.5px; padding: 1px 7px; border-radius: 4px;
@@ -85,15 +100,27 @@
   }
   .src-chip.news { color: #91c1ff; }
   .src-chip.hn   { color: #ffad6e; }
+  .tier-chip {
+    display: inline-block; font-size: 9.5px; padding: 1px 5px; border-radius: 3px;
+    background: var(--bg); margin-right: 4px; border: 1px solid var(--border);
+    letter-spacing: 0.4px; font-weight: 500;
+  }
+  .tier-chip.t1 { color: var(--tier1); border-color: var(--tier1); }
+  .tier-chip.t3 { color: var(--tier3); }
   .loc-chip {
     display: inline-block; font-size: 10px; padding: 1px 5px; border-radius: 3px;
     background: var(--bg); color: var(--muted); margin-right: 3px;
     border: 1px solid var(--border); font-variant-numeric: tabular-nums;
   }
+  .new-badge {
+    display: inline-block; font-size: 10px; padding: 1px 6px; border-radius: 999px;
+    background: var(--new); color: var(--bg); font-weight: 600; margin-left: 6px;
+    vertical-align: middle;
+  }
   .delta-cell { font-variant-numeric: tabular-nums; font-weight: 500; }
   .delta-up { color: var(--pos); }
   .delta-down { color: var(--neg); }
-  .top-signal { max-width: 360px; font-size: 12.5px; line-height: 1.35; }
+  .top-signal { max-width: 340px; font-size: 12.5px; line-height: 1.35; }
   .top-signal .dot-inline { display: inline-block; width: 6px; height: 6px; border-radius: 50%; margin-right: 6px; vertical-align: middle; }
   .pill-pos { color: var(--pos); font-variant-numeric: tabular-nums; }
   .pill-neg { color: var(--neg); font-variant-numeric: tabular-nums; }
@@ -109,7 +136,7 @@
   .dot:nth-child(2) { animation-delay: 0.2s; }
   .dot:nth-child(3) { animation-delay: 0.4s; }
   @keyframes pulse { 0%, 80%, 100% { opacity: 0.3; } 40% { opacity: 1; } }
-  .section-title { margin: 0 0 12px; font-size: 12px; text-transform: uppercase; letter-spacing: 0.6px; color: var(--muted); }
+  .section-title { margin: 0; font-size: 12px; text-transform: uppercase; letter-spacing: 0.6px; color: var(--muted); }
   canvas { max-height: 280px; }
   .engagement { color: var(--accent); font-variant-numeric: tabular-nums; font-size: 12px; }
   .mover-item {
@@ -135,6 +162,12 @@
     cursor: pointer; white-space: nowrap;
   }
   .empty-hist { color: var(--muted); font-size: 12px; padding: 8px 0; }
+  .star-btn {
+    background: none; border: none; color: var(--border); font-size: 16px;
+    cursor: pointer; padding: 0 4px; line-height: 1;
+  }
+  .star-btn.on { color: var(--star); }
+  .star-btn:hover { color: var(--star); }
 
   /* Modal */
   .modal-backdrop {
@@ -190,7 +223,7 @@
     font-variant-numeric: tabular-nums; font-weight: 600; font-size: 12px;
     min-width: 46px;
   }
-  .modal-filter-buttons { display: flex; gap: 6px; margin: 10px 0 8px; }
+  .modal-filter-buttons { display: flex; gap: 6px; margin: 10px 0 8px; flex-wrap: wrap; }
   .modal-filter-buttons button {
     background: var(--panel-2); color: var(--text); border: 1px solid var(--border);
     border-radius: 6px; padding: 4px 10px; font-size: 12px; cursor: pointer;
@@ -203,7 +236,7 @@
 <header>
   <div>
     <h1>Prosus Ventures — Portfolio Sentiment</h1>
-    <div class="sub">News + HN across 9 regional locales · relevance-filtered · pattern-aware scoring · <span id="total-count">—</span> companies</div>
+    <div class="sub">News + HN across 9 regional locales · relevance-filtered · tier-weighted · <span id="total-count">—</span> companies</div>
   </div>
   <div class="sub">Updated: <span id="generated-at">—</span> · <button onclick="load(true)" style="margin-left:8px; background:transparent; color:var(--accent); border:none; cursor:pointer;">refresh</button></div>
 </header>
@@ -225,32 +258,58 @@
       <div class="card"><div class="kpi-label">Negative</div><div class="kpi-value neg" id="k-neg">—</div><div class="kpi-sub" id="k-neg-sub"></div></div>
     </div>
 
-    <div class="row grid-2" style="margin-top:16px">
-      <div class="card">
-        <div class="section-title">Notable events <span class="muted" style="font-weight:normal; text-transform:none; letter-spacing:0">· last 45 days · |score|≥0.35</span></div>
-        <div id="notable-feed"></div>
+    <div class="card" style="margin-top:16px">
+      <div class="card-head">
+        <div>
+          <div class="section-title">What's new <span id="whatsnew-count" class="muted" style="font-weight:normal; text-transform:none; letter-spacing:0"></span></div>
+        </div>
+        <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap">
+          <label class="muted" style="font-size:12px">since</label>
+          <select id="window-sel" onchange="renderNotable()">
+            <option value="visit">Last visit</option>
+            <option value="1">24h</option>
+            <option value="7" selected>7d</option>
+            <option value="30">30d</option>
+            <option value="45">45d</option>
+          </select>
+          <label style="display:flex; align-items:center; gap:5px; font-size:12px; color:var(--muted); cursor:pointer">
+            <input type="checkbox" id="trusted-only" onchange="renderNotable(); render();" /> Trusted sources only
+          </label>
+          <button onclick="markAsRead()" style="background:var(--panel-2); border:1px solid var(--border); color:var(--text); border-radius:6px; padding:5px 10px; font-size:12px; cursor:pointer">Mark as read</button>
+        </div>
       </div>
-      <div class="card">
-        <div class="section-title">Sentiment by region</div>
-        <canvas id="region-chart"></canvas>
-      </div>
+      <div id="notable-feed"></div>
     </div>
 
     <div class="row grid-2" style="margin-top:16px">
       <div class="card">
-        <div class="section-title">Biggest movers <span class="muted" id="movers-window" style="font-weight:normal; text-transform:none; letter-spacing:0"></span></div>
-        <div id="movers-up"></div>
+        <div class="section-title">Sentiment by region</div>
+        <div style="margin-top:12px"><canvas id="region-chart"></canvas></div>
       </div>
       <div class="card">
-        <div class="section-title">Falling fastest</div>
-        <div id="movers-down"></div>
+        <div class="card-head">
+          <div class="section-title">Biggest movers <span class="muted" id="movers-window" style="font-weight:normal; text-transform:none; letter-spacing:0"></span></div>
+        </div>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px">
+          <div>
+            <div class="muted" style="font-size:11px; text-transform:uppercase; letter-spacing:0.4px; margin-bottom:4px">Rising</div>
+            <div id="movers-up"></div>
+          </div>
+          <div>
+            <div class="muted" style="font-size:11px; text-transform:uppercase; letter-spacing:0.4px; margin-bottom:4px">Falling</div>
+            <div id="movers-down"></div>
+          </div>
+        </div>
       </div>
     </div>
 
     <div class="tools">
-      <input id="q" type="search" placeholder="Search company or description…" oninput="render()" />
+      <input id="q" type="search" placeholder="Search companies or headlines…" oninput="render()" style="min-width:260px" />
       <select id="region" onchange="render()">
         <option value="">All regions</option>
+      </select>
+      <select id="type" onchange="render()">
+        <option value="">All types</option>
       </select>
       <select id="sort" onchange="render()">
         <option value="score-desc">Score ↓</option>
@@ -260,7 +319,9 @@
         <option value="buzz-desc">Buzz ↓</option>
         <option value="delta-desc">Δ ↓</option>
         <option value="delta-asc">Δ ↑</option>
+        <option value="new">New events first</option>
       </select>
+      <button id="watchlist-toggle" class="toggle-star" onclick="toggleWatchlistFilter()">☆ Watchlist</button>
       <span class="muted" id="filter-count" style="margin-left:auto"></span>
     </div>
 
@@ -268,14 +329,14 @@
       <table>
         <thead>
           <tr>
+            <th style="width:28px"></th>
             <th>Company</th>
-            <th>Region</th>
+            <th>Region / Type</th>
             <th>Score</th>
             <th>Trend</th>
             <th>Δ</th>
             <th>Top signal</th>
             <th>Mix</th>
-            <th>Locales</th>
             <th>Buzz</th>
             <th>Last</th>
           </tr>
@@ -292,11 +353,65 @@
 </div>
 
 <script>
+const LS = {
+  LAST_VISITED: "pvs.lastVisited",
+  WATCHLIST: "pvs.watchlist",
+  TRUSTED_ONLY: "pvs.trustedOnly",
+  WATCHLIST_ONLY: "pvs.watchlistOnly",
+};
+
 let DATA = null;
 let HIST = null;
 let regionChart = null;
 let modalCharts = [];
 let modalFilter = "all";
+let WATCHLIST = new Set();
+let WATCHLIST_ONLY = false;
+let LAST_VISITED_TS = null;     // timestamp ms — what the user "last saw"
+
+function loadLocalState() {
+  try {
+    WATCHLIST = new Set(JSON.parse(localStorage.getItem(LS.WATCHLIST) || "[]"));
+    WATCHLIST_ONLY = localStorage.getItem(LS.WATCHLIST_ONLY) === "1";
+    document.getElementById("trusted-only").checked =
+      localStorage.getItem(LS.TRUSTED_ONLY) === "1";
+  } catch (e) { /* ignore */ }
+
+  // Establish baseline "since last visit"
+  const saved = Number(localStorage.getItem(LS.LAST_VISITED) || 0);
+  const now = Date.now();
+  if (saved && (now - saved) < 10 * 60 * 1000) {
+    // refresh within 10 min — keep previous baseline so the user still
+    // sees the "new events since last session"
+    LAST_VISITED_TS = saved - (now - saved);  // nudge baseline back slightly
+    LAST_VISITED_TS = saved;
+  } else {
+    LAST_VISITED_TS = saved || (now - 7 * 86400000);
+    localStorage.setItem(LS.LAST_VISITED, String(now));
+  }
+}
+
+function markAsRead() {
+  localStorage.setItem(LS.LAST_VISITED, String(Date.now()));
+  LAST_VISITED_TS = Date.now();
+  renderNotable();
+  render();
+}
+
+function toggleWatchlist(name) {
+  if (WATCHLIST.has(name)) WATCHLIST.delete(name); else WATCHLIST.add(name);
+  localStorage.setItem(LS.WATCHLIST, JSON.stringify([...WATCHLIST]));
+  render();
+}
+
+function toggleWatchlistFilter() {
+  WATCHLIST_ONLY = !WATCHLIST_ONLY;
+  localStorage.setItem(LS.WATCHLIST_ONLY, WATCHLIST_ONLY ? "1" : "0");
+  document.getElementById("watchlist-toggle").classList.toggle("active", WATCHLIST_ONLY);
+  document.getElementById("watchlist-toggle").textContent =
+    (WATCHLIST_ONLY ? "★ " : "☆ ") + "Watchlist" + (WATCHLIST.size ? ` (${WATCHLIST.size})` : "");
+  render();
+}
 
 async function load(force) {
   document.getElementById("loader").style.display = "flex";
@@ -316,14 +431,20 @@ async function load(force) {
   }
 }
 
-function buildTimeline(companyName) {
+function buildTimeline(name) {
   const snaps = (HIST || []).slice().reverse();
   const series = [];
   for (const s of snaps) {
-    const c = (s.companies || {})[companyName];
+    const c = (s.companies || {})[name];
     if (c && typeof c.score === "number") series.push({date: s.date, score: c.score});
   }
   return series;
+}
+
+function sinceCutoff() {
+  const v = document.getElementById("window-sel").value;
+  if (v === "visit") return LAST_VISITED_TS;
+  return Date.now() - Number(v) * 86400000;
 }
 
 function hydrate() {
@@ -332,7 +453,8 @@ function hydrate() {
 
   const s = DATA.summary;
   document.getElementById("k-total").textContent = s.covered + "/" + DATA.total;
-  document.getElementById("k-total-sub").textContent = s.total_mentions.toLocaleString() + " kept · " + (s.dropped_irrelevant || 0).toLocaleString() + " filtered";
+  const tt = s.tier_totals || {};
+  document.getElementById("k-total-sub").textContent = s.total_mentions.toLocaleString() + " kept · " + (tt[1] || 0) + " T1 / " + (tt[3] || 0) + " low";
   document.getElementById("k-avg").textContent = fmt(s.average_score);
   document.getElementById("k-avg-sub").textContent = "across covered companies";
   document.getElementById("k-pos").textContent = s.positive;
@@ -344,11 +466,13 @@ function hydrate() {
 
   const regionSel = document.getElementById("region");
   regionSel.querySelectorAll("option:not([value=''])").forEach(o => o.remove());
-  const regions = [...new Set(DATA.companies.map(c => c.region))].sort();
-  for (const r of regions) {
-    const opt = document.createElement("option");
-    opt.value = r; opt.textContent = r;
-    regionSel.appendChild(opt);
+  for (const r of [...new Set(DATA.companies.map(c => c.region))].sort()) {
+    regionSel.appendChild(optEl(r));
+  }
+  const typeSel = document.getElementById("type");
+  typeSel.querySelectorAll("option:not([value=''])").forEach(o => o.remove());
+  for (const t of [...new Set(DATA.companies.map(c => c.type).filter(Boolean))].sort()) {
+    typeSel.appendChild(optEl(t));
   }
 
   for (const c of DATA.companies) {
@@ -362,43 +486,98 @@ function hydrate() {
       c._delta = null;
     }
     c._timeline = tl.concat([{date: DATA.generated_at.slice(0,10), score: c.score}]);
+    // "Has new events" — any headline newer than LAST_VISITED
+    c._hasNew = (c.headlines || []).some(h => {
+      const ts = pubDateMs(h.pubDate);
+      return ts && ts > LAST_VISITED_TS;
+    });
   }
 
+  // Watchlist toggle button state
+  document.getElementById("watchlist-toggle").classList.toggle("active", WATCHLIST_ONLY);
+  document.getElementById("watchlist-toggle").textContent =
+    (WATCHLIST_ONLY ? "★ " : "☆ ") + "Watchlist" + (WATCHLIST.size ? ` (${WATCHLIST.size})` : "");
+
   drawRegionChart(s.region_average);
-  renderNotable();
   renderMovers();
+  renderNotable();
   render();
 
   document.getElementById("loader").style.display = "none";
   document.getElementById("content").style.display = "block";
 
-  // Deep-link: #company=Name
   const hash = decodeURIComponent(location.hash || "");
   const m = hash.match(/company=([^&]+)/);
   if (m) openModal(m[1]);
 }
 
+function optEl(v) { const o = document.createElement("option"); o.value = v; o.textContent = v; return o; }
+
+function pubDateMs(s) {
+  if (!s) return null;
+  const t = Date.parse(s);
+  return isNaN(t) ? null : t;
+}
+
 function renderNotable() {
+  const trustedOnly = document.getElementById("trusted-only").checked;
+  localStorage.setItem(LS.TRUSTED_ONLY, trustedOnly ? "1" : "0");
+
+  const cutoff = sinceCutoff();
   const container = document.getElementById("notable-feed");
-  const feed = DATA.notable_feed || [];
-  if (feed.length === 0) {
-    container.innerHTML = '<div class="empty-hist">No strong signals in the last 45 days.</div>';
+
+  // Collect all headlines (not just notable_feed) so the window selector
+  // honors the chosen timespan.
+  let events = [];
+  for (const c of DATA.companies) {
+    for (const h of (c.headlines || [])) {
+      const ts = pubDateMs(h.pubDate);
+      if (!ts || ts < cutoff) continue;
+      if (Math.abs(h.compound) < 0.2) continue;  // de-noise: only real signals
+      if (trustedOnly && h.tier !== 1) continue;
+      events.push({...h, company: c.name, region: c.region});
+    }
+  }
+  // Rank by |compound| × tier × recency
+  const now = Date.now();
+  events.sort((a, b) => {
+    const sa = Math.abs(a.compound) * (a.tier === 1 ? 1.5 : a.tier === 3 ? 0.4 : 1) * (1 / (1 + (now - pubDateMs(a.pubDate)) / 86400000));
+    const sb = Math.abs(b.compound) * (b.tier === 1 ? 1.5 : b.tier === 3 ? 0.4 : 1) * (1 / (1 + (now - pubDateMs(b.pubDate)) / 86400000));
+    return sb - sa;
+  });
+
+  const count = events.length;
+  const windowSel = document.getElementById("window-sel");
+  const label = windowSel.options[windowSel.selectedIndex].text;
+  document.getElementById("whatsnew-count").textContent =
+    "· " + count + " event" + (count === 1 ? "" : "s") + " · " + label.toLowerCase() +
+    (windowSel.value === "visit" ? " (" + fmtSince(LAST_VISITED_TS) + ")" : "");
+
+  if (count === 0) {
+    container.innerHTML = '<div class="empty-hist">🎉 Caught up — no events in this window (try a wider range, or uncheck "Trusted only").</div>';
     return;
   }
-  container.innerHTML = feed.slice(0, 8).map(h => {
+  container.innerHTML = events.slice(0, 12).map(h => {
     const color = h.compound >= 0.05 ? "var(--pos)" : (h.compound <= -0.05 ? "var(--neg)" : "var(--muted)");
     const link = h.link ? `<a href="${h.link}" target="_blank" rel="noopener">${esc(h.title)}</a>` : esc(h.title);
+    const tierChip = tierBadge(h.tier);
     return `
       <div class="notable-item">
         <div class="notable-score" style="color:${color}">${fmt(h.compound)}</div>
         <div>
-          <div class="notable-title">${link}</div>
+          <div class="notable-title">${tierChip}${link}</div>
           <div class="notable-meta">${esc(h.source || "")} · ${fmtDate(h.pubDate)}${h.engagement > 0 ? ' · ' + fmtNum(h.engagement) + ' ↑' : ''}</div>
         </div>
-        <div class="notable-company" onclick="openModal('${esc(h.company).replace(/'/g, "\\'")}')">${esc(h.company)}</div>
+        <div class="notable-company" onclick="openModal('${esc(h.company).replace(/'/g, "\\\\'")}')">${esc(h.company)}</div>
       </div>
     `;
   }).join("");
+}
+
+function tierBadge(tier) {
+  if (tier === 1) return '<span class="tier-chip t1">TRUSTED</span>';
+  if (tier === 3) return '<span class="tier-chip t3">LOW</span>';
+  return "";
 }
 
 function renderMovers() {
@@ -416,7 +595,7 @@ function renderMovers() {
     if (arr.length === 0 || arr.every(c => c._delta === 0)) return noData;
     return arr.map(c => `
       <div class="mover-item">
-        <span class="mover-name"><a href="#" onclick="openModal('${esc(c.name).replace(/'/g, "\\'")}');return false;">${esc(c.name)}</a> <span class="muted" style="font-size:11px">${esc(c.region)}</span></span>
+        <span class="mover-name"><a href="#" onclick="openModal('${esc(c.name).replace(/'/g, "\\\\'")}');return false;">${esc(c.name)}</a> <span class="muted" style="font-size:11px">${esc(c.region)}</span></span>
         <span class="delta-cell ${c._delta >= 0 ? 'delta-up' : 'delta-down'}">${fmt(c._delta)}</span>
       </div>
     `).join("");
@@ -451,6 +630,14 @@ function fmtDate(iso) {
     return Math.floor(days / 365) + "y ago";
   } catch { return "—"; }
 }
+function fmtSince(ts) {
+  const days = Math.floor((Date.now() - ts) / 86400000);
+  if (days < 1) {
+    const hrs = Math.floor((Date.now() - ts) / 3600000);
+    return hrs < 1 ? "< 1h ago" : hrs + "h ago";
+  }
+  return days + "d ago";
+}
 function scoreColor(n) {
   if (n >= 0.05) return "var(--pos)";
   if (n <= -0.05) return "var(--neg)";
@@ -481,11 +668,23 @@ function sparkline(points, width=70, height=20) {
 function render() {
   const q = document.getElementById("q").value.trim().toLowerCase();
   const region = document.getElementById("region").value;
+  const typeFlt = document.getElementById("type").value;
   const sort = document.getElementById("sort").value;
+  const trustedOnly = document.getElementById("trusted-only").checked;
 
   let rows = DATA.companies.slice();
-  if (q) rows = rows.filter(c => c.name.toLowerCase().includes(q) || (c.description || "").toLowerCase().includes(q));
+
+  // Text search — matches company name/description OR any headline title.
+  if (q) {
+    rows = rows.filter(c => {
+      if (c.name.toLowerCase().includes(q)) return true;
+      if ((c.description || "").toLowerCase().includes(q)) return true;
+      return (c.headlines || []).some(h => (h.title || "").toLowerCase().includes(q));
+    });
+  }
   if (region) rows = rows.filter(c => c.region === region);
+  if (typeFlt) rows = rows.filter(c => c.type === typeFlt);
+  if (WATCHLIST_ONLY) rows = rows.filter(c => WATCHLIST.has(c.name));
 
   if (sort === "score-desc") rows.sort((a,b) => b.score - a.score);
   else if (sort === "score-asc") rows.sort((a,b) => a.score - b.score);
@@ -494,47 +693,64 @@ function render() {
   else if (sort === "buzz-desc") rows.sort((a,b) => (b.engagement||0) - (a.engagement||0));
   else if (sort === "delta-desc") rows.sort((a,b) => (b._delta ?? -Infinity) - (a._delta ?? -Infinity));
   else if (sort === "delta-asc")  rows.sort((a,b) => (a._delta ??  Infinity) - (b._delta ??  Infinity));
+  else if (sort === "new")        rows.sort((a,b) => (b._hasNew ? 1 : 0) - (a._hasNew ? 1 : 0) || b.score - a.score);
 
-  document.getElementById("filter-count").textContent = rows.length + " shown · " +
-    rows.reduce((s,r) => s + r.count, 0).toLocaleString() + " mentions · click a row for detail";
+  const newCount = rows.filter(c => c._hasNew).length;
+  document.getElementById("filter-count").textContent =
+    rows.length + " shown · " +
+    rows.reduce((s,r) => s + r.count, 0).toLocaleString() + " mentions" +
+    (newCount ? ` · ${newCount} with new events` : "") +
+    " · click row for detail";
 
   const tbody = document.getElementById("tbody");
   tbody.innerHTML = "";
   for (const c of rows) {
     const tr = document.createElement("tr");
-    tr.className = "company";
-    tr.onclick = () => openModal(c.name);
+    tr.className = "company" + (c._hasNew ? " has-new" : "");
+    tr.onclick = (e) => {
+      if (e.target.closest(".star-btn")) return;
+      openModal(c.name);
+    };
 
     const width = Math.min(55, Math.abs(c.score) * 55);
     const left = c.score >= 0 ? 50 : 50 - width;
     const color = scoreColor(c.score);
     const bs = c.by_source || {news: 0, hn: 0};
+    const bt = c.by_tier || {};
 
     const deltaHtml = c._delta === null
       ? '<span class="muted">—</span>'
       : `<span class="delta-cell ${c._delta >= 0 ? 'delta-up' : 'delta-down'}">${fmt(c._delta)}</span>`;
 
-    const srcChips = [];
-    if (bs.news) srcChips.push(`<span class="src-chip news">news ${bs.news}</span>`);
-    if (bs.hn)   srcChips.push(`<span class="src-chip hn">HN ${bs.hn}</span>`);
-
-    const locChips = Object.entries(c.by_locale || {})
-      .sort((a,b) => b[1] - a[1])
-      .slice(0, 3)
-      .map(([k,v]) => `<span class="loc-chip">${esc(k)} ${v}</span>`)
-      .join("");
-
-    const top = c.top_signal;
+    // Top signal — if trusted-only is active, try to pick the best T1 signal;
+    // fall back to the server-supplied top_signal.
+    let top = c.top_signal;
+    if (trustedOnly) {
+      const t1s = (c.headlines || []).filter(h => h.tier === 1 && Math.abs(h.compound) >= 0.1);
+      if (t1s.length > 0) {
+        t1s.sort((a,b) => Math.abs(b.compound) - Math.abs(a.compound));
+        top = t1s[0];
+      } else if (top && top.tier !== 1) {
+        top = null;
+      }
+    }
     const topCell = top
-      ? `<div class="top-signal"><span class="dot-inline" style="background:${scoreColor(top.compound)}"></span><span style="color:${scoreColor(top.compound)}; font-variant-numeric:tabular-nums">${fmt(top.compound)}</span> · ${esc(top.title.slice(0, 110))}${top.title.length > 110 ? '…' : ''}</div>`
+      ? `<div class="top-signal">${tierBadge(top.tier)}<span class="dot-inline" style="background:${scoreColor(top.compound)}"></span><span style="color:${scoreColor(top.compound)}; font-variant-numeric:tabular-nums">${fmt(top.compound)}</span> · ${esc(top.title.slice(0, 95))}${top.title.length > 95 ? '…' : ''}</div>`
       : `<span class="muted">—</span>`;
 
+    const starOn = WATCHLIST.has(c.name);
+    const newMark = c._hasNew ? '<span class="new-badge">NEW</span>' : '';
+
     tr.innerHTML = `
+      <td><button class="star-btn ${starOn ? 'on' : ''}" onclick="event.stopPropagation(); toggleWatchlist('${esc(c.name).replace(/'/g, "\\\\'")}')" title="${starOn ? 'Remove from' : 'Add to'} watchlist">${starOn ? '★' : '☆'}</button></td>
       <td>
-        <div><strong>${esc(c.name)}</strong></div>
+        <div><strong>${esc(c.name)}</strong>${newMark}</div>
         <div class="muted" style="font-size:12px">${esc(c.description || "")}</div>
       </td>
-      <td><span class="badge">${esc(c.region)}</span></td>
+      <td>
+        <span class="badge">${esc(c.region)}</span>
+        ${c.type ? `<span class="badge type">${esc(c.type)}</span>` : ''}
+      </td>
       <td>
         <div class="score-cell">
           <span class="score-num" style="color:${color}">${fmt(c.score)}</span>
@@ -542,7 +758,7 @@ function render() {
             <div class="fill" style="left:${left}%; width:${width}%; background:${color}"></div>
           </div>
         </div>
-        <div class="muted" style="font-size:11px; margin-top:3px">n=${c.count}${c.dropped_irrelevant ? ' · ' + c.dropped_irrelevant + ' filtered' : ''}</div>
+        <div class="muted" style="font-size:11px; margin-top:3px">n=${c.count}${(bt[1] ? ` · <span class="tier-chip t1">T1 ${bt[1]}</span>` : '')}${(bt[3] ? ` · <span class="tier-chip t3">L ${bt[3]}</span>` : '')}</div>
       </td>
       <td>${sparkline(c._timeline)}</td>
       <td>${deltaHtml}</td>
@@ -550,7 +766,6 @@ function render() {
       <td>
         <span class="pill-pos">${c.pos}</span>/<span class="muted">${c.neu}</span>/<span class="pill-neg">${c.neg}</span>
       </td>
-      <td>${locChips || '<span class="muted">—</span>'}</td>
       <td>${c.engagement > 0 ? `<span class="engagement">${fmtNum(c.engagement)} ↑</span>` : '<span class="muted">—</span>'}</td>
       <td class="muted" style="font-size:12px">${fmtDate(c.last_seen)}</td>
     `;
@@ -583,7 +798,7 @@ function drawRegionChart(regionAvg) {
   });
 }
 
-// ------- Modal (company detail) -------
+// ------- Modal -------
 
 function openModal(name) {
   const c = DATA.companies.find(x => x.name === name);
@@ -593,9 +808,9 @@ function openModal(name) {
 
   const tl = c._timeline || [];
   const bs = c.by_source || {news: 0, hn: 0};
+  const bt = c.by_tier || {};
   const locales = Object.entries(c.by_locale || {}).sort((a,b) => b[1] - a[1]);
 
-  // Distribution of headline scores (for the histogram chart)
   const bins = Array(10).fill(0);
   const binLabels = ["-1/-0.8","-0.8/-0.6","-0.6/-0.4","-0.4/-0.2","-0.2/0","0/0.2","0.2/0.4","0.4/0.6","0.6/0.8","0.8/1"];
   for (const h of (c.headlines || [])) {
@@ -603,15 +818,17 @@ function openModal(name) {
     bins[i]++;
   }
 
+  const starOn = WATCHLIST.has(c.name);
   const body = document.getElementById("modal-body");
   body.innerHTML = `
     <button class="modal-close" onclick="closeModal()">×</button>
     <div class="modal-title-row">
       <div>
-        <h1>${esc(c.name)}</h1>
+        <h1><button class="star-btn ${starOn ? 'on' : ''}" onclick="toggleWatchlist('${esc(c.name).replace(/'/g, "\\\\'")}'); openModal('${esc(c.name).replace(/'/g, "\\\\'")}')" style="font-size:22px; vertical-align:middle">${starOn ? '★' : '☆'}</button> ${esc(c.name)}</h1>
         <div class="muted" style="margin-top:4px">${esc(c.description || "")}</div>
         <div style="margin-top:6px">
           <span class="badge">${esc(c.region)}</span>
+          ${c.type ? `<span class="badge type">${esc(c.type)}</span>` : ''}
           <a href="https://${esc(c.website)}" target="_blank" rel="noopener" style="margin-left:8px; font-size:12px">${esc(c.website)} ↗</a>
         </div>
       </div>
@@ -623,17 +840,17 @@ function openModal(name) {
     </div>
 
     <div class="modal-stats">
-      <div class="modal-stat"><div class="modal-stat-label">Positive</div><div class="modal-stat-value pos" style="color:var(--pos)">${c.pos}</div></div>
+      <div class="modal-stat"><div class="modal-stat-label">Positive</div><div class="modal-stat-value" style="color:var(--pos)">${c.pos}</div></div>
       <div class="modal-stat"><div class="modal-stat-label">Neutral</div><div class="modal-stat-value muted">${c.neu}</div></div>
       <div class="modal-stat"><div class="modal-stat-label">Negative</div><div class="modal-stat-value" style="color:var(--neg)">${c.neg}</div></div>
       <div class="modal-stat"><div class="modal-stat-label">Buzz (↑+comments)</div><div class="modal-stat-value">${fmtNum(c.engagement)}</div></div>
     </div>
 
     <div class="modal-stats">
-      <div class="modal-stat"><div class="modal-stat-label">News</div><div class="modal-stat-value">${bs.news || 0}</div></div>
-      <div class="modal-stat"><div class="modal-stat-label">Hacker News</div><div class="modal-stat-value">${bs.hn || 0}</div></div>
-      <div class="modal-stat"><div class="modal-stat-label">Irrelevant dropped</div><div class="modal-stat-value muted">${c.dropped_irrelevant || 0}</div></div>
-      <div class="modal-stat"><div class="modal-stat-label">Last seen</div><div class="modal-stat-value" style="font-size:14px">${fmtDate(c.last_seen)}</div></div>
+      <div class="modal-stat"><div class="modal-stat-label">T1 Trusted</div><div class="modal-stat-value" style="color:var(--tier1)">${bt[1] || 0}</div></div>
+      <div class="modal-stat"><div class="modal-stat-label">Standard (T2)</div><div class="modal-stat-value">${bt[2] || 0}</div></div>
+      <div class="modal-stat"><div class="modal-stat-label">Low (T3)</div><div class="modal-stat-value muted">${bt[3] || 0}</div></div>
+      <div class="modal-stat"><div class="modal-stat-label">Filtered irrelevant</div><div class="modal-stat-value muted">${c.dropped_irrelevant || 0}</div></div>
     </div>
 
     ${locales.length > 0 ? `<h3>Locales</h3>
@@ -642,29 +859,29 @@ function openModal(name) {
     <div class="modal-charts">
       <div class="card">
         <div class="section-title">Score timeline</div>
-        <canvas id="m-timeline" style="max-height:200px"></canvas>
+        <canvas id="m-timeline" style="max-height:200px; margin-top:12px"></canvas>
       </div>
       <div class="card">
         <div class="section-title">Headline score distribution</div>
-        <canvas id="m-dist" style="max-height:200px"></canvas>
+        <canvas id="m-dist" style="max-height:200px; margin-top:12px"></canvas>
       </div>
     </div>
 
     <h3>All headlines (${c.headlines ? c.headlines.length : 0})</h3>
     <div class="modal-filter-buttons">
-      <button class="active" data-flt="all" onclick="setModalFilter('all', '${esc(c.name).replace(/'/g, "\\'")}')">All</button>
-      <button data-flt="pos" onclick="setModalFilter('pos', '${esc(c.name).replace(/'/g, "\\'")}')">Positive (${c.pos})</button>
-      <button data-flt="neg" onclick="setModalFilter('neg', '${esc(c.name).replace(/'/g, "\\'")}')">Negative (${c.neg})</button>
-      <button data-flt="pattern" onclick="setModalFilter('pattern', '${esc(c.name).replace(/'/g, "\\'")}')">Pattern-matched</button>
+      <button class="active" data-flt="all" onclick="setModalFilter('all', '${esc(c.name).replace(/'/g, "\\\\'")}')">All</button>
+      <button data-flt="pos" onclick="setModalFilter('pos', '${esc(c.name).replace(/'/g, "\\\\'")}')">Positive (${c.pos})</button>
+      <button data-flt="neg" onclick="setModalFilter('neg', '${esc(c.name).replace(/'/g, "\\\\'")}')">Negative (${c.neg})</button>
+      <button data-flt="pattern" onclick="setModalFilter('pattern', '${esc(c.name).replace(/'/g, "\\\\'")}')">Pattern-matched</button>
+      <button data-flt="t1" onclick="setModalFilter('t1', '${esc(c.name).replace(/'/g, "\\\\'")}')">Trusted only</button>
+      <button data-flt="new" onclick="setModalFilter('new', '${esc(c.name).replace(/'/g, "\\\\'")}')">New since last visit</button>
     </div>
     <div class="modal-headlines" id="modal-headlines">${renderHeadlineList(c.headlines, "all")}</div>
   `;
 
-  // Destroy previous charts
   modalCharts.forEach(ch => ch.destroy());
   modalCharts = [];
 
-  // Timeline chart
   const tlCtx = document.getElementById("m-timeline");
   if (tlCtx && tl.length > 0) {
     modalCharts.push(new Chart(tlCtx, {
@@ -689,7 +906,6 @@ function openModal(name) {
     }));
   }
 
-  // Distribution chart
   const distCtx = document.getElementById("m-dist");
   if (distCtx) {
     const colors = binLabels.map((_, i) => i < 4 ? "#e35e5e" : (i === 4 || i === 5 ? "#8a94b4" : "#2fc27a"));
@@ -728,27 +944,31 @@ function renderHeadlineList(headlines, flt) {
   if (flt === "pos") rows = rows.filter(h => h.compound >= 0.05);
   else if (flt === "neg") rows = rows.filter(h => h.compound <= -0.05);
   else if (flt === "pattern") rows = rows.filter(h => h.pattern_hit);
+  else if (flt === "t1") rows = rows.filter(h => h.tier === 1);
+  else if (flt === "new") rows = rows.filter(h => {
+    const ts = pubDateMs(h.pubDate);
+    return ts && ts > LAST_VISITED_TS;
+  });
   if (rows.length === 0) return '<div class="empty-hist">None in this category.</div>';
 
-  // Sort by recency, or by |compound| for "pattern" filter
-  if (flt === "pattern") {
-    rows.sort((a,b) => Math.abs(b.compound) - Math.abs(a.compound));
-  }
+  if (flt === "pattern") rows.sort((a,b) => Math.abs(b.compound) - Math.abs(a.compound));
 
   return rows.map(h => {
     const col = scoreColor(h.compound);
     const link = h.link ? `<a href="${h.link}" target="_blank" rel="noopener">${esc(h.title)}</a>` : esc(h.title);
     const origin = h.origin === "hn" ? `<span class="src-chip hn">HN</span>` : `<span class="src-chip news">news</span>`;
+    const tier = tierBadge(h.tier);
     const loc = h.locale ? `<span class="loc-chip">${esc(h.locale)}</span>` : "";
     const pat = h.pattern_hit ? `<span class="loc-chip" style="color:var(--accent)">pattern</span>` : "";
-    const rel = (h.relevance !== undefined && h.relevance < 0.3) ? ' <span class="muted" style="font-size:10px">· low-rel</span>' : "";
     const eng = h.engagement > 0 ? ` · <span class="engagement">${fmtNum(h.engagement)} ↑</span>` : "";
     const lowClass = (h.relevance !== undefined && h.relevance < 0.3) ? " relevance-low" : "";
+    const ts = pubDateMs(h.pubDate);
+    const isNew = ts && ts > LAST_VISITED_TS ? '<span class="new-badge">NEW</span>' : '';
     return `
       <div class="modal-headline${lowClass}">
         <div class="score-badge" style="color:${col}">${fmt(h.compound)}</div>
         <div>
-          <div>${origin}${loc}${pat}${link}${rel}</div>
+          <div>${origin}${tier}${loc}${pat}${link}${isNew}</div>
           <div class="notable-meta">${esc(h.source || "")} · ${fmtDate(h.pubDate)}${eng}</div>
         </div>
       </div>
@@ -767,6 +987,7 @@ document.addEventListener("keydown", e => {
   if (e.key === "Escape") closeModal();
 });
 
+loadLocalState();
 load();
 </script>
 </body>

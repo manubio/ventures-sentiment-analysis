@@ -16,6 +16,7 @@ from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
 
 import lexicon
 import patterns as pattern_rules
+import sources
 from relevance import RelevanceScorer
 
 ANALYZER = SentimentIntensityAnalyzer()
@@ -174,13 +175,15 @@ def recency_weight(pubdate_ts, now_ts, half_life_days=30):
 def notability(headline, now_ts):
     """Combined signal for ranking "notable" headlines.
 
-    |compound| × recency × relevance × log(1+engagement)
+    |compound| × recency × relevance × source_tier × log(1+engagement)
     """
     compound = headline.get("compound", 0.0) or 0.0
     rel = headline.get("relevance", 0.5) or 0.5
     eng = headline.get("engagement", 0) or 0
+    tier = headline.get("tier", 2)
+    tier_w = sources.TIER_WEIGHT.get(tier, 1.0)
     rec = recency_weight(parse_pubdate(headline.get("pubDate")), now_ts)
-    return abs(compound) * rec * rel * (1.0 + math.log(1.0 + eng) / 4.0)
+    return abs(compound) * rec * rel * tier_w * (1.0 + math.log(1.0 + eng) / 4.0)
 
 
 def score_company(company, items, relevancer, now_ts):
@@ -188,11 +191,13 @@ def score_company(company, items, relevancer, now_ts):
         "name": company["name"],
         "website": company["website"],
         "region": company["region"],
+        "type": company.get("type", ""),
         "description": company.get("description", ""),
         "count": 0, "score": 0.0,
         "pos": 0, "neu": 0, "neg": 0,
         "by_source": {"news": 0, "hn": 0},
         "by_locale": {},
+        "by_tier": {1: 0, 2: 0, 3: 0},
         "engagement": 0,
         "last_seen": None,
         "top_signal": None,
@@ -220,11 +225,13 @@ def score_company(company, items, relevancer, now_ts):
             dropped += 1
             continue
         compound, pattern_hit = score_headline(h["title"])
+        tier = sources.tier_for(h.get("source"), h.get("link"))
         scored.append({
             **h,
             "compound": round(compound, 3),
             "relevance": round(confidence, 3),
             "pattern_hit": pattern_hit,
+            "tier": tier,
         })
 
     if not scored:
@@ -237,10 +244,12 @@ def score_company(company, items, relevancer, now_ts):
 
     by_source = {"news": 0, "hn": 0}
     by_locale = {}
+    by_tier = {1: 0, 2: 0, 3: 0}
     for s in scored:
         by_source[s["origin"]] = by_source.get(s["origin"], 0) + 1
         loc = s.get("locale", "en")
         by_locale[loc] = by_locale.get(loc, 0) + 1
+        by_tier[s.get("tier", 2)] = by_tier.get(s.get("tier", 2), 0) + 1
 
     engagement = sum(s.get("engagement", 0) for s in scored)
     dates = [s["pubDate"] for s in scored if s.get("pubDate")]
@@ -269,6 +278,7 @@ def score_company(company, items, relevancer, now_ts):
         "pos": pos, "neu": neu, "neg": neg,
         "by_source": by_source,
         "by_locale": by_locale,
+        "by_tier": by_tier,
         "engagement": engagement,
         "last_seen": last_seen,
         "top_signal": top_signal,
@@ -329,11 +339,14 @@ def summarize(results):
 
     source_totals = {"news": 0, "hn": 0}
     locale_totals = {}
+    tier_totals = {1: 0, 2: 0, 3: 0}
     for r in covered:
         for k, v in r["by_source"].items():
             source_totals[k] = source_totals.get(k, 0) + v
         for k, v in r.get("by_locale", {}).items():
             locale_totals[k] = locale_totals.get(k, 0) + v
+        for k, v in r.get("by_tier", {}).items():
+            tier_totals[k] = tier_totals.get(k, 0) + v
 
     return {
         "covered": len(covered),
@@ -343,6 +356,7 @@ def summarize(results):
         "region_average": region_avg,
         "source_totals": source_totals,
         "locale_totals": locale_totals,
+        "tier_totals": tier_totals,
         "total_mentions": sum(r["count"] for r in covered),
         "dropped_irrelevant": sum(r.get("dropped_irrelevant", 0) for r in results),
     }
