@@ -31,6 +31,8 @@
     flex-wrap: wrap; gap: 12px;
   }
   h1 { margin: 0; font-size: 22px; letter-spacing: 0.2px; }
+  h2 { margin: 0 0 12px; font-size: 16px; }
+  h3 { margin: 18px 0 8px; font-size: 13px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.6px; }
   .sub { color: var(--muted); font-size: 13px; margin-top: 4px; }
   .container { max-width: 1440px; margin: 0 auto; padding: 24px 32px 64px; }
   .row { display: grid; gap: 16px; }
@@ -66,6 +68,7 @@
   table { width: 100%; border-collapse: collapse; }
   th, td { padding: 12px 14px; text-align: left; border-bottom: 1px solid var(--border); font-size: 13px; vertical-align: top; }
   th { color: var(--muted); font-weight: 500; font-size: 11px; text-transform: uppercase; letter-spacing: 0.4px; }
+  tr.company { cursor: pointer; transition: background 0.15s; }
   tr.company:hover { background: var(--panel-2); }
   .score-cell { display: flex; align-items: center; gap: 8px; min-width: 170px; }
   .bar { position: relative; width: 110px; height: 8px; border-radius: 4px; background: var(--panel-2); overflow: hidden; }
@@ -90,13 +93,8 @@
   .delta-cell { font-variant-numeric: tabular-nums; font-weight: 500; }
   .delta-up { color: var(--pos); }
   .delta-down { color: var(--neg); }
-  details summary { cursor: pointer; color: var(--muted); font-size: 12px; list-style: none; }
-  details summary::-webkit-details-marker { display: none; }
-  details[open] summary::before { content: "▾ "; }
-  details:not([open]) summary::before { content: "▸ "; }
-  details ul { margin: 10px 0 0; padding: 0 0 0 18px; }
-  details li { margin: 6px 0; font-size: 12.5px; color: var(--text); line-height: 1.4; }
-  details li .meta { color: var(--muted); font-size: 11px; margin-top: 2px; display: block; }
+  .top-signal { max-width: 360px; font-size: 12.5px; line-height: 1.35; }
+  .top-signal .dot-inline { display: inline-block; width: 6px; height: 6px; border-radius: 50%; margin-right: 6px; vertical-align: middle; }
   .pill-pos { color: var(--pos); font-variant-numeric: tabular-nums; }
   .pill-neg { color: var(--neg); font-variant-numeric: tabular-nums; }
   .muted { color: var(--muted); }
@@ -120,16 +118,92 @@
   }
   .mover-item:last-child { border-bottom: none; }
   .mover-name { font-weight: 500; }
-  .empty-hist {
-    color: var(--muted); font-size: 12px; padding: 8px 0;
+  .notable-item {
+    padding: 10px 0; border-bottom: 1px solid var(--border);
+    display: grid; grid-template-columns: auto 1fr auto; gap: 12px; align-items: flex-start;
+    font-size: 13px;
   }
+  .notable-item:last-child { border-bottom: none; }
+  .notable-score {
+    font-variant-numeric: tabular-nums; font-weight: 600; min-width: 46px;
+  }
+  .notable-title { line-height: 1.4; }
+  .notable-meta { font-size: 11px; color: var(--muted); margin-top: 3px; }
+  .notable-company {
+    font-size: 11px; color: var(--accent); background: var(--bg);
+    padding: 2px 8px; border-radius: 999px; border: 1px solid var(--border);
+    cursor: pointer; white-space: nowrap;
+  }
+  .empty-hist { color: var(--muted); font-size: 12px; padding: 8px 0; }
+
+  /* Modal */
+  .modal-backdrop {
+    position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(3, 6, 18, 0.7); backdrop-filter: blur(4px);
+    display: none; align-items: flex-start; justify-content: center;
+    z-index: 100; padding: 40px 20px; overflow-y: auto;
+  }
+  .modal-backdrop.open { display: flex; }
+  .modal {
+    background: var(--panel); border: 1px solid var(--border);
+    border-radius: 14px; width: 100%; max-width: 1100px;
+    padding: 28px 32px 36px; position: relative; box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+  }
+  .modal-close {
+    position: absolute; top: 16px; right: 16px;
+    background: var(--panel-2); color: var(--text); border: 1px solid var(--border);
+    border-radius: 8px; width: 32px; height: 32px; cursor: pointer;
+    font-size: 18px; line-height: 1;
+  }
+  .modal-close:hover { border-color: var(--accent); }
+  .modal-title-row { display: flex; flex-wrap: wrap; gap: 16px; align-items: flex-start; justify-content: space-between; }
+  .modal-title-row h1 { font-size: 24px; }
+  .modal-score {
+    font-size: 32px; font-weight: 700; font-variant-numeric: tabular-nums;
+  }
+  .modal-stats {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin: 18px 0 8px;
+  }
+  @media (max-width: 700px) { .modal-stats { grid-template-columns: repeat(2, 1fr); } }
+  .modal-stat {
+    background: var(--panel-2); border: 1px solid var(--border);
+    border-radius: 8px; padding: 10px 12px;
+  }
+  .modal-stat-label { color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: 0.4px; }
+  .modal-stat-value { font-size: 18px; font-weight: 600; margin-top: 2px; font-variant-numeric: tabular-nums; }
+  .modal-charts {
+    display: grid; grid-template-columns: 2fr 1fr; gap: 16px; margin: 18px 0 8px;
+  }
+  @media (max-width: 800px) { .modal-charts { grid-template-columns: 1fr; } }
+  .modal-charts .card { min-height: 240px; }
+  .modal-headlines {
+    max-height: 460px; overflow-y: auto;
+    border: 1px solid var(--border); border-radius: 8px; padding: 4px 12px;
+  }
+  .modal-headline {
+    padding: 10px 0; border-bottom: 1px solid var(--border);
+    display: grid; grid-template-columns: auto 1fr; gap: 10px; align-items: flex-start;
+    font-size: 13px;
+  }
+  .modal-headline:last-child { border-bottom: none; }
+  .modal-headline .score-badge {
+    font-variant-numeric: tabular-nums; font-weight: 600; font-size: 12px;
+    min-width: 46px;
+  }
+  .modal-filter-buttons { display: flex; gap: 6px; margin: 10px 0 8px; }
+  .modal-filter-buttons button {
+    background: var(--panel-2); color: var(--text); border: 1px solid var(--border);
+    border-radius: 6px; padding: 4px 10px; font-size: 12px; cursor: pointer;
+  }
+  .modal-filter-buttons button.active { border-color: var(--accent); color: var(--accent); }
+  .relevance-low { opacity: 0.65; }
 </style>
 </head>
 <body>
 <header>
   <div>
     <h1>Prosus Ventures — Portfolio Sentiment</h1>
-    <div class="sub">Live sentiment across <span id="total-count">—</span> portfolio companies · news + HN in regional locales · VADER + business/PT/ES lexicon</div>
+    <div class="sub">News + HN across 9 regional locales · relevance-filtered · pattern-aware scoring · <span id="total-count">—</span> companies</div>
   </div>
   <div class="sub">Updated: <span id="generated-at">—</span> · <button onclick="load(true)" style="margin-left:8px; background:transparent; color:var(--accent); border:none; cursor:pointer;">refresh</button></div>
 </header>
@@ -138,7 +212,7 @@
 
   <div id="loader" class="loader">
     <div class="dot"></div><div class="dot"></div><div class="dot"></div>
-    <span>Fetching news across 8 regional locales for 93 companies… 5–15s</span>
+    <span>Fetching and scoring… 5–15s</span>
   </div>
 
   <div id="content" style="display:none">
@@ -151,11 +225,18 @@
       <div class="card"><div class="kpi-label">Negative</div><div class="kpi-value neg" id="k-neg">—</div><div class="kpi-sub" id="k-neg-sub"></div></div>
     </div>
 
-    <div class="row grid-3" style="margin-top:16px">
+    <div class="row grid-2" style="margin-top:16px">
+      <div class="card">
+        <div class="section-title">Notable events <span class="muted" style="font-weight:normal; text-transform:none; letter-spacing:0">· last 45 days · |score|≥0.35</span></div>
+        <div id="notable-feed"></div>
+      </div>
       <div class="card">
         <div class="section-title">Sentiment by region</div>
         <canvas id="region-chart"></canvas>
       </div>
+    </div>
+
+    <div class="row grid-2" style="margin-top:16px">
       <div class="card">
         <div class="section-title">Biggest movers <span class="muted" id="movers-window" style="font-weight:normal; text-transform:none; letter-spacing:0"></span></div>
         <div id="movers-up"></div>
@@ -189,14 +270,14 @@
           <tr>
             <th>Company</th>
             <th>Region</th>
-            <th>Sentiment</th>
+            <th>Score</th>
             <th>Trend</th>
             <th>Δ</th>
+            <th>Top signal</th>
             <th>Mix</th>
             <th>Locales</th>
             <th>Buzz</th>
-            <th>Last seen</th>
-            <th>Headlines</th>
+            <th>Last</th>
           </tr>
         </thead>
         <tbody id="tbody"></tbody>
@@ -205,10 +286,17 @@
   </div>
 </main>
 
+<!-- Company detail modal -->
+<div class="modal-backdrop" id="modal-backdrop" onclick="if(event.target===this)closeModal()">
+  <div class="modal" id="modal-body"></div>
+</div>
+
 <script>
 let DATA = null;
 let HIST = null;
 let regionChart = null;
+let modalCharts = [];
+let modalFilter = "all";
 
 async function load(force) {
   document.getElementById("loader").style.display = "flex";
@@ -228,10 +316,8 @@ async function load(force) {
   }
 }
 
-// Build per-company score timeline: [{date, score}, ...] ordered oldest → newest,
-// including today's live score as the last point.
 function buildTimeline(companyName) {
-  const snaps = (HIST || []).slice().reverse();  // oldest first
+  const snaps = (HIST || []).slice().reverse();
   const series = [];
   for (const s of snaps) {
     const c = (s.companies || {})[companyName];
@@ -246,7 +332,7 @@ function hydrate() {
 
   const s = DATA.summary;
   document.getElementById("k-total").textContent = s.covered + "/" + DATA.total;
-  document.getElementById("k-total-sub").textContent = s.total_mentions.toLocaleString() + " mentions · " + Object.keys(s.locale_totals || {}).length + " locales";
+  document.getElementById("k-total-sub").textContent = s.total_mentions.toLocaleString() + " kept · " + (s.dropped_irrelevant || 0).toLocaleString() + " filtered";
   document.getElementById("k-avg").textContent = fmt(s.average_score);
   document.getElementById("k-avg-sub").textContent = "across covered companies";
   document.getElementById("k-pos").textContent = s.positive;
@@ -257,6 +343,7 @@ function hydrate() {
   document.getElementById("k-neg-sub").textContent = pct(s.negative, s.covered);
 
   const regionSel = document.getElementById("region");
+  regionSel.querySelectorAll("option:not([value=''])").forEach(o => o.remove());
   const regions = [...new Set(DATA.companies.map(c => c.region))].sort();
   for (const r of regions) {
     const opt = document.createElement("option");
@@ -264,10 +351,8 @@ function hydrate() {
     regionSel.appendChild(opt);
   }
 
-  // Compute deltas
   for (const c of DATA.companies) {
     const tl = buildTimeline(c.name);
-    // Baseline = oldest snapshot within last 30 days (fallback: oldest we have)
     const cutoff = Date.now() - 30 * 86400000;
     const baseline = tl.find(p => new Date(p.date).getTime() >= cutoff) || tl[0];
     if (baseline && typeof baseline.score === "number") {
@@ -275,36 +360,63 @@ function hydrate() {
       c._baseDate = baseline.date;
     } else {
       c._delta = null;
-      c._baseDate = null;
     }
-    // Full timeline including today's live score
     c._timeline = tl.concat([{date: DATA.generated_at.slice(0,10), score: c.score}]);
   }
 
   drawRegionChart(s.region_average);
+  renderNotable();
   renderMovers();
   render();
 
   document.getElementById("loader").style.display = "none";
   document.getElementById("content").style.display = "block";
+
+  // Deep-link: #company=Name
+  const hash = decodeURIComponent(location.hash || "");
+  const m = hash.match(/company=([^&]+)/);
+  if (m) openModal(m[1]);
+}
+
+function renderNotable() {
+  const container = document.getElementById("notable-feed");
+  const feed = DATA.notable_feed || [];
+  if (feed.length === 0) {
+    container.innerHTML = '<div class="empty-hist">No strong signals in the last 45 days.</div>';
+    return;
+  }
+  container.innerHTML = feed.slice(0, 8).map(h => {
+    const color = h.compound >= 0.05 ? "var(--pos)" : (h.compound <= -0.05 ? "var(--neg)" : "var(--muted)");
+    const link = h.link ? `<a href="${h.link}" target="_blank" rel="noopener">${esc(h.title)}</a>` : esc(h.title);
+    return `
+      <div class="notable-item">
+        <div class="notable-score" style="color:${color}">${fmt(h.compound)}</div>
+        <div>
+          <div class="notable-title">${link}</div>
+          <div class="notable-meta">${esc(h.source || "")} · ${fmtDate(h.pubDate)}${h.engagement > 0 ? ' · ' + fmtNum(h.engagement) + ' ↑' : ''}</div>
+        </div>
+        <div class="notable-company" onclick="openModal('${esc(h.company).replace(/'/g, "\\'")}')">${esc(h.company)}</div>
+      </div>
+    `;
+  }).join("");
 }
 
 function renderMovers() {
   const withDelta = DATA.companies.filter(c => c._delta !== null && c.count > 0);
   const window = HIST.length > 0
-    ? "vs " + (HIST[HIST.length - 1]?.date || "earliest") + " (" + HIST.length + " snapshots)"
-    : "awaiting first snapshot";
-  document.getElementById("movers-window").textContent = "· " + window;
+    ? "· vs " + (HIST[HIST.length - 1]?.date || "—") + " (" + HIST.length + " snapshots)"
+    : "· awaiting first snapshot";
+  document.getElementById("movers-window").textContent = window;
 
   const up = withDelta.slice().sort((a,b) => b._delta - a._delta).slice(0, 5);
   const down = withDelta.slice().sort((a,b) => a._delta - b._delta).slice(0, 5);
-  const noData = '<div class="empty-hist">No prior snapshots yet — daily deltas appear after the next run.</div>';
+  const noData = '<div class="empty-hist">Daily deltas appear after the next snapshot commits.</div>';
 
   const renderList = (arr) => {
     if (arr.length === 0 || arr.every(c => c._delta === 0)) return noData;
     return arr.map(c => `
       <div class="mover-item">
-        <span class="mover-name">${esc(c.name)} <span class="muted" style="font-size:11px">${esc(c.region)}</span></span>
+        <span class="mover-name"><a href="#" onclick="openModal('${esc(c.name).replace(/'/g, "\\'")}');return false;">${esc(c.name)}</a> <span class="muted" style="font-size:11px">${esc(c.region)}</span></span>
         <span class="delta-cell ${c._delta >= 0 ? 'delta-up' : 'delta-down'}">${fmt(c._delta)}</span>
       </div>
     `).join("");
@@ -318,18 +430,15 @@ function pct(n, total) {
   if (!total) return "—";
   return Math.round((n / total) * 100) + "%";
 }
-
 function fmt(n) {
   if (n === null || n === undefined) return "—";
   return (n >= 0 ? "+" : "") + Number(n).toFixed(3);
 }
-
 function fmtNum(n) {
   if (!n) return "0";
   if (n >= 1000) return (n / 1000).toFixed(1) + "k";
   return String(n);
 }
-
 function fmtDate(iso) {
   if (!iso) return "—";
   try {
@@ -342,30 +451,25 @@ function fmtDate(iso) {
     return Math.floor(days / 365) + "y ago";
   } catch { return "—"; }
 }
-
 function scoreColor(n) {
   if (n >= 0.05) return "var(--pos)";
   if (n <= -0.05) return "var(--neg)";
   return "var(--neu)";
 }
 
-function sparkline(points, width=80, height=22) {
-  const filtered = points.filter(p => typeof p.score === "number");
-  if (filtered.length < 2) {
-    return '<span class="muted" style="font-size:11px">—</span>';
-  }
+function sparkline(points, width=70, height=20) {
+  const filtered = (points || []).filter(p => typeof p.score === "number");
+  if (filtered.length < 2) return '<span class="muted" style="font-size:11px">—</span>';
   const scores = filtered.map(p => p.score);
   let min = Math.min(...scores), max = Math.max(...scores);
-  if (max - min < 0.05) { const c = (min + max) / 2; min = c - 0.05; max = c + 0.05; }
+  if (max - min < 0.05) { const c = (min+max)/2; min = c - 0.05; max = c + 0.05; }
   const range = max - min;
-  const step = filtered.length > 1 ? width / (filtered.length - 1) : 0;
+  const step = width / (filtered.length - 1);
   const coords = filtered.map((p, i) =>
-    `${(i * step).toFixed(1)},${(height - ((p.score - min) / range) * height).toFixed(1)}`
+    `${(i*step).toFixed(1)},${(height - ((p.score - min) / range) * height).toFixed(1)}`
   ).join(" ");
   const first = scores[0], last = scores[scores.length - 1];
-  const stroke = last > first + 0.02 ? "var(--pos)"
-             : last < first - 0.02 ? "var(--neg)"
-             : "var(--muted)";
+  const stroke = last > first + 0.02 ? "var(--pos)" : last < first - 0.02 ? "var(--neg)" : "var(--muted)";
   const lastX = (filtered.length - 1) * step;
   const lastY = height - ((last - min) / range) * height;
   return `<svg width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" style="vertical-align:middle">
@@ -392,30 +496,23 @@ function render() {
   else if (sort === "delta-asc")  rows.sort((a,b) => (a._delta ??  Infinity) - (b._delta ??  Infinity));
 
   document.getElementById("filter-count").textContent = rows.length + " shown · " +
-    rows.reduce((s,r) => s + r.count, 0).toLocaleString() + " mentions";
+    rows.reduce((s,r) => s + r.count, 0).toLocaleString() + " mentions · click a row for detail";
 
   const tbody = document.getElementById("tbody");
   tbody.innerHTML = "";
   for (const c of rows) {
     const tr = document.createElement("tr");
     tr.className = "company";
+    tr.onclick = () => openModal(c.name);
 
     const width = Math.min(55, Math.abs(c.score) * 55);
     const left = c.score >= 0 ? 50 : 50 - width;
     const color = scoreColor(c.score);
     const bs = c.by_source || {news: 0, hn: 0};
 
-    const heads = (c.headlines || []).map(h => {
-      const col = h.compound >= 0.05 ? "var(--pos)" : (h.compound <= -0.05 ? "var(--neg)" : "var(--muted)");
-      const link = h.link ? `<a href="${h.link}" target="_blank" rel="noopener">${esc(h.title)}</a>` : esc(h.title);
-      const origin = h.origin === "hn" ? `<span class="src-chip hn">HN</span>` : `<span class="src-chip news">news</span>`;
-      const loc = h.locale ? `<span class="loc-chip">${esc(h.locale)}</span>` : "";
-      const eng = h.engagement > 0 ? ` · <span class="engagement">${fmtNum(h.engagement)} ↑</span>` : "";
-      return `<li>
-        <span style="color:${col}">●</span> ${origin}${loc}${link}
-        <span class="meta">${esc(h.source || "")} · ${fmtDate(h.pubDate)} · score ${fmt(h.compound)}${eng}</span>
-      </li>`;
-    }).join("");
+    const deltaHtml = c._delta === null
+      ? '<span class="muted">—</span>'
+      : `<span class="delta-cell ${c._delta >= 0 ? 'delta-up' : 'delta-down'}">${fmt(c._delta)}</span>`;
 
     const srcChips = [];
     if (bs.news) srcChips.push(`<span class="src-chip news">news ${bs.news}</span>`);
@@ -423,18 +520,19 @@ function render() {
 
     const locChips = Object.entries(c.by_locale || {})
       .sort((a,b) => b[1] - a[1])
+      .slice(0, 3)
       .map(([k,v]) => `<span class="loc-chip">${esc(k)} ${v}</span>`)
       .join("");
 
-    const deltaHtml = c._delta === null
-      ? '<span class="muted">—</span>'
-      : `<span class="delta-cell ${c._delta >= 0 ? 'delta-up' : 'delta-down'}">${fmt(c._delta)}</span>`;
+    const top = c.top_signal;
+    const topCell = top
+      ? `<div class="top-signal"><span class="dot-inline" style="background:${scoreColor(top.compound)}"></span><span style="color:${scoreColor(top.compound)}; font-variant-numeric:tabular-nums">${fmt(top.compound)}</span> · ${esc(top.title.slice(0, 110))}${top.title.length > 110 ? '…' : ''}</div>`
+      : `<span class="muted">—</span>`;
 
     tr.innerHTML = `
       <td>
         <div><strong>${esc(c.name)}</strong></div>
         <div class="muted" style="font-size:12px">${esc(c.description || "")}</div>
-        <div class="muted" style="font-size:12px"><a href="https://${esc(c.website)}" target="_blank" rel="noopener">${esc(c.website)}</a></div>
       </td>
       <td><span class="badge">${esc(c.region)}</span></td>
       <td>
@@ -444,21 +542,17 @@ function render() {
             <div class="fill" style="left:${left}%; width:${width}%; background:${color}"></div>
           </div>
         </div>
+        <div class="muted" style="font-size:11px; margin-top:3px">n=${c.count}${c.dropped_irrelevant ? ' · ' + c.dropped_irrelevant + ' filtered' : ''}</div>
       </td>
-      <td>${sparkline(c._timeline || [])}</td>
+      <td>${sparkline(c._timeline)}</td>
       <td>${deltaHtml}</td>
+      <td>${topCell}</td>
       <td>
-        <span class="pill-pos">${c.pos}</span> /
-        <span class="muted">${c.neu}</span> /
-        <span class="pill-neg">${c.neg}</span>
-        <div class="muted" style="font-size:11px">n=${c.count}</div>
+        <span class="pill-pos">${c.pos}</span>/<span class="muted">${c.neu}</span>/<span class="pill-neg">${c.neg}</span>
       </td>
       <td>${locChips || '<span class="muted">—</span>'}</td>
       <td>${c.engagement > 0 ? `<span class="engagement">${fmtNum(c.engagement)} ↑</span>` : '<span class="muted">—</span>'}</td>
       <td class="muted" style="font-size:12px">${fmtDate(c.last_seen)}</td>
-      <td>
-        ${c.count > 0 ? `<details><summary>sample ${c.headlines.length}</summary><ul>${heads}</ul></details>` : '<span class="muted">no coverage</span>'}
-      </td>
     `;
     tbody.appendChild(tr);
   }
@@ -473,7 +567,6 @@ function drawRegionChart(regionAvg) {
   const labels = entries.map(e => e[0]);
   const values = entries.map(e => e[1]);
   const colors = values.map(v => v >= 0.05 ? "#2fc27a" : v <= -0.05 ? "#e35e5e" : "#8a94b4");
-
   if (regionChart) regionChart.destroy();
   regionChart = new Chart(document.getElementById("region-chart"), {
     type: "bar",
@@ -489,6 +582,190 @@ function drawRegionChart(regionAvg) {
     }
   });
 }
+
+// ------- Modal (company detail) -------
+
+function openModal(name) {
+  const c = DATA.companies.find(x => x.name === name);
+  if (!c) return;
+  modalFilter = "all";
+  location.hash = "company=" + encodeURIComponent(name);
+
+  const tl = c._timeline || [];
+  const bs = c.by_source || {news: 0, hn: 0};
+  const locales = Object.entries(c.by_locale || {}).sort((a,b) => b[1] - a[1]);
+
+  // Distribution of headline scores (for the histogram chart)
+  const bins = Array(10).fill(0);
+  const binLabels = ["-1/-0.8","-0.8/-0.6","-0.6/-0.4","-0.4/-0.2","-0.2/0","0/0.2","0.2/0.4","0.4/0.6","0.6/0.8","0.8/1"];
+  for (const h of (c.headlines || [])) {
+    let i = Math.min(9, Math.max(0, Math.floor((h.compound + 1) * 5)));
+    bins[i]++;
+  }
+
+  const body = document.getElementById("modal-body");
+  body.innerHTML = `
+    <button class="modal-close" onclick="closeModal()">×</button>
+    <div class="modal-title-row">
+      <div>
+        <h1>${esc(c.name)}</h1>
+        <div class="muted" style="margin-top:4px">${esc(c.description || "")}</div>
+        <div style="margin-top:6px">
+          <span class="badge">${esc(c.region)}</span>
+          <a href="https://${esc(c.website)}" target="_blank" rel="noopener" style="margin-left:8px; font-size:12px">${esc(c.website)} ↗</a>
+        </div>
+      </div>
+      <div style="text-align:right">
+        <div class="modal-score" style="color:${scoreColor(c.score)}">${fmt(c.score)}</div>
+        <div class="muted" style="font-size:12px">avg sentiment · ${c.count} headlines</div>
+        ${c._delta !== null ? `<div class="delta-cell ${c._delta >= 0 ? 'delta-up' : 'delta-down'}" style="font-size:13px; margin-top:4px">Δ ${fmt(c._delta)} vs ${c._baseDate || 'start'}</div>` : ''}
+      </div>
+    </div>
+
+    <div class="modal-stats">
+      <div class="modal-stat"><div class="modal-stat-label">Positive</div><div class="modal-stat-value pos" style="color:var(--pos)">${c.pos}</div></div>
+      <div class="modal-stat"><div class="modal-stat-label">Neutral</div><div class="modal-stat-value muted">${c.neu}</div></div>
+      <div class="modal-stat"><div class="modal-stat-label">Negative</div><div class="modal-stat-value" style="color:var(--neg)">${c.neg}</div></div>
+      <div class="modal-stat"><div class="modal-stat-label">Buzz (↑+comments)</div><div class="modal-stat-value">${fmtNum(c.engagement)}</div></div>
+    </div>
+
+    <div class="modal-stats">
+      <div class="modal-stat"><div class="modal-stat-label">News</div><div class="modal-stat-value">${bs.news || 0}</div></div>
+      <div class="modal-stat"><div class="modal-stat-label">Hacker News</div><div class="modal-stat-value">${bs.hn || 0}</div></div>
+      <div class="modal-stat"><div class="modal-stat-label">Irrelevant dropped</div><div class="modal-stat-value muted">${c.dropped_irrelevant || 0}</div></div>
+      <div class="modal-stat"><div class="modal-stat-label">Last seen</div><div class="modal-stat-value" style="font-size:14px">${fmtDate(c.last_seen)}</div></div>
+    </div>
+
+    ${locales.length > 0 ? `<h3>Locales</h3>
+      <div>${locales.map(([k,v]) => `<span class="loc-chip">${esc(k)} · ${v}</span>`).join(" ")}</div>` : ''}
+
+    <div class="modal-charts">
+      <div class="card">
+        <div class="section-title">Score timeline</div>
+        <canvas id="m-timeline" style="max-height:200px"></canvas>
+      </div>
+      <div class="card">
+        <div class="section-title">Headline score distribution</div>
+        <canvas id="m-dist" style="max-height:200px"></canvas>
+      </div>
+    </div>
+
+    <h3>All headlines (${c.headlines ? c.headlines.length : 0})</h3>
+    <div class="modal-filter-buttons">
+      <button class="active" data-flt="all" onclick="setModalFilter('all', '${esc(c.name).replace(/'/g, "\\'")}')">All</button>
+      <button data-flt="pos" onclick="setModalFilter('pos', '${esc(c.name).replace(/'/g, "\\'")}')">Positive (${c.pos})</button>
+      <button data-flt="neg" onclick="setModalFilter('neg', '${esc(c.name).replace(/'/g, "\\'")}')">Negative (${c.neg})</button>
+      <button data-flt="pattern" onclick="setModalFilter('pattern', '${esc(c.name).replace(/'/g, "\\'")}')">Pattern-matched</button>
+    </div>
+    <div class="modal-headlines" id="modal-headlines">${renderHeadlineList(c.headlines, "all")}</div>
+  `;
+
+  // Destroy previous charts
+  modalCharts.forEach(ch => ch.destroy());
+  modalCharts = [];
+
+  // Timeline chart
+  const tlCtx = document.getElementById("m-timeline");
+  if (tlCtx && tl.length > 0) {
+    modalCharts.push(new Chart(tlCtx, {
+      type: "line",
+      data: {
+        labels: tl.map(p => p.date),
+        datasets: [{
+          data: tl.map(p => p.score),
+          borderColor: scoreColor(c.score),
+          backgroundColor: scoreColor(c.score) + "30",
+          fill: true, tension: 0.25, pointRadius: 3,
+        }]
+      },
+      options: {
+        plugins: { legend: { display: false } },
+        scales: {
+          x: { grid: { display: false }, ticks: { color: "#8a94b4" } },
+          y: { suggestedMin: -1, suggestedMax: 1, grid: { color: "#24304f" }, ticks: { color: "#8a94b4" } },
+        },
+        maintainAspectRatio: false,
+      }
+    }));
+  }
+
+  // Distribution chart
+  const distCtx = document.getElementById("m-dist");
+  if (distCtx) {
+    const colors = binLabels.map((_, i) => i < 4 ? "#e35e5e" : (i === 4 || i === 5 ? "#8a94b4" : "#2fc27a"));
+    modalCharts.push(new Chart(distCtx, {
+      type: "bar",
+      data: { labels: binLabels, datasets: [{ data: bins, backgroundColor: colors, borderRadius: 4 }] },
+      options: {
+        plugins: { legend: { display: false } },
+        scales: {
+          x: { grid: { display: false }, ticks: { color: "#8a94b4", font: { size: 9 } } },
+          y: { beginAtZero: true, grid: { color: "#24304f" }, ticks: { color: "#8a94b4", stepSize: 1 } },
+        },
+        maintainAspectRatio: false,
+      }
+    }));
+  }
+
+  document.getElementById("modal-backdrop").classList.add("open");
+}
+
+function setModalFilter(flt, companyName) {
+  modalFilter = flt;
+  const c = DATA.companies.find(x => x.name === companyName);
+  if (!c) return;
+  document.querySelectorAll(".modal-filter-buttons button").forEach(b => {
+    b.classList.toggle("active", b.dataset.flt === flt);
+  });
+  document.getElementById("modal-headlines").innerHTML = renderHeadlineList(c.headlines, flt);
+}
+
+function renderHeadlineList(headlines, flt) {
+  if (!headlines || headlines.length === 0) {
+    return '<div class="empty-hist">No headlines.</div>';
+  }
+  let rows = headlines.slice();
+  if (flt === "pos") rows = rows.filter(h => h.compound >= 0.05);
+  else if (flt === "neg") rows = rows.filter(h => h.compound <= -0.05);
+  else if (flt === "pattern") rows = rows.filter(h => h.pattern_hit);
+  if (rows.length === 0) return '<div class="empty-hist">None in this category.</div>';
+
+  // Sort by recency, or by |compound| for "pattern" filter
+  if (flt === "pattern") {
+    rows.sort((a,b) => Math.abs(b.compound) - Math.abs(a.compound));
+  }
+
+  return rows.map(h => {
+    const col = scoreColor(h.compound);
+    const link = h.link ? `<a href="${h.link}" target="_blank" rel="noopener">${esc(h.title)}</a>` : esc(h.title);
+    const origin = h.origin === "hn" ? `<span class="src-chip hn">HN</span>` : `<span class="src-chip news">news</span>`;
+    const loc = h.locale ? `<span class="loc-chip">${esc(h.locale)}</span>` : "";
+    const pat = h.pattern_hit ? `<span class="loc-chip" style="color:var(--accent)">pattern</span>` : "";
+    const rel = (h.relevance !== undefined && h.relevance < 0.3) ? ' <span class="muted" style="font-size:10px">· low-rel</span>' : "";
+    const eng = h.engagement > 0 ? ` · <span class="engagement">${fmtNum(h.engagement)} ↑</span>` : "";
+    const lowClass = (h.relevance !== undefined && h.relevance < 0.3) ? " relevance-low" : "";
+    return `
+      <div class="modal-headline${lowClass}">
+        <div class="score-badge" style="color:${col}">${fmt(h.compound)}</div>
+        <div>
+          <div>${origin}${loc}${pat}${link}${rel}</div>
+          <div class="notable-meta">${esc(h.source || "")} · ${fmtDate(h.pubDate)}${eng}</div>
+        </div>
+      </div>
+    `;
+  }).join("");
+}
+
+function closeModal() {
+  document.getElementById("modal-backdrop").classList.remove("open");
+  modalCharts.forEach(ch => ch.destroy());
+  modalCharts = [];
+  if (location.hash) history.replaceState(null, "", location.pathname);
+}
+
+document.addEventListener("keydown", e => {
+  if (e.key === "Escape") closeModal();
+});
 
 load();
 </script>

@@ -1,12 +1,13 @@
 import glob
 import json
+import math
 import os
 import sys
 import urllib.parse
 import urllib.request
 import xml.etree.ElementTree as ET
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
@@ -14,6 +15,8 @@ from flask import Flask, jsonify, make_response, send_from_directory
 from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
 
 import lexicon
+import patterns as pattern_rules
+from relevance import RelevanceScorer
 
 ANALYZER = SentimentIntensityAnalyzer()
 lexicon.install(ANALYZER)
@@ -29,8 +32,6 @@ HISTORY_DIR = os.path.join(ROOT_DIR, "data", "history")
 
 app = Flask(__name__, static_folder=ROOT_DIR, static_url_path="")
 
-# Per-region Google News locales. Each locale = (hl, gl, ceid_lang).
-# Multiple locales are fetched in parallel and results merged/deduped by URL.
 REGION_LOCALES = {
     "India":     [("en-IN", "IN", "en")],
     "LatAm":     [("pt-BR", "BR", "pt-BR"), ("es-419", "MX", "es-419")],
@@ -85,33 +86,6 @@ def _google_news(query_str, hl, gl, ceid_lang, origin="news"):
     return items
 
 
-def build_news_tasks(company):
-    """Return (fn, args) pairs for every news fetch this company needs."""
-    tasks = []
-    query = query_for(company)
-    domain = company.get("website", "")
-    locales = REGION_LOCALES.get(company["region"], REGION_LOCALES["Other"])
-
-    # Name-based query in each regional locale
-    for (hl, gl, ceid) in locales:
-        tasks.append(("news", (query, hl, gl, ceid)))
-
-    # Domain-based query in en-US (catches URL-linked articles globally)
-    if domain:
-        tasks.append(("news", (f'"{domain}"', "en-US", "US", "en")))
-
-    tasks.append(("hn", None))
-    return tasks
-
-
-def fetch_task(kind, args, company):
-    if kind == "news":
-        return _google_news(*args)
-    if kind == "hn":
-        return fetch_hn(company)
-    return []
-
-
 def fetch_hn(company):
     q = urllib.parse.quote(query_for(company))
     url = f"https://hn.algolia.com/api/v1/search?query={q}&tags=story&hitsPerPage={MAX_PER_SOURCE}"
@@ -138,7 +112,78 @@ def fetch_hn(company):
     return items
 
 
-def score_company(company, items):
+def build_news_tasks(company):
+    tasks = []
+    query = query_for(company)
+    domain = company.get("website", "")
+    locales = REGION_LOCALES.get(company["region"], REGION_LOCALES["Other"])
+    for (hl, gl, ceid) in locales:
+        tasks.append(("news", (query, hl, gl, ceid)))
+    if domain:
+        tasks.append(("news", (f'"{domain}"', "en-US", "US", "en")))
+    tasks.append(("hn", None))
+    return tasks
+
+
+def fetch_task(kind, args, company):
+    if kind == "news":
+        return _google_news(*args)
+    if kind == "hn":
+        return fetch_hn(company)
+    return []
+
+
+# ---------- Scoring ----------
+
+def score_headline(title):
+    """Score a single headline: pattern override wins over VADER."""
+    override = pattern_rules.override_score(title)
+    if override is not None:
+        return override, True
+    return ANALYZER.polarity_scores(title)["compound"], False
+
+
+def parse_pubdate(s):
+    """Best-effort date parsing; return epoch seconds or None."""
+    if not s:
+        return None
+    for fmt in (
+        "%a, %d %b %Y %H:%M:%S %Z",
+        "%a, %d %b %Y %H:%M:%S %z",
+        "%Y-%m-%dT%H:%M:%S.%fZ",
+        "%Y-%m-%dT%H:%M:%SZ",
+        "%Y-%m-%dT%H:%M:%S%z",
+    ):
+        try:
+            dt = datetime.strptime(s, fmt)
+            if dt.tzinfo is None:
+                dt = dt.replace(tzinfo=timezone.utc)
+            return dt.timestamp()
+        except ValueError:
+            continue
+    return None
+
+
+def recency_weight(pubdate_ts, now_ts, half_life_days=30):
+    if not pubdate_ts:
+        return 0.4
+    age_days = max(0, (now_ts - pubdate_ts) / 86400)
+    return max(0.05, math.exp(-math.log(2) * age_days / half_life_days))
+
+
+def notability(headline, now_ts):
+    """Combined signal for ranking "notable" headlines.
+
+    |compound| × recency × relevance × log(1+engagement)
+    """
+    compound = headline.get("compound", 0.0) or 0.0
+    rel = headline.get("relevance", 0.5) or 0.5
+    eng = headline.get("engagement", 0) or 0
+    rec = recency_weight(parse_pubdate(headline.get("pubDate")), now_ts)
+    return abs(compound) * rec * rel * (1.0 + math.log(1.0 + eng) / 4.0)
+
+
+def score_company(company, items, relevancer, now_ts):
     base = {
         "name": company["name"],
         "website": company["website"],
@@ -150,14 +195,16 @@ def score_company(company, items):
         "by_locale": {},
         "engagement": 0,
         "last_seen": None,
+        "top_signal": None,
+        "notable": [],
         "headlines": [],
+        "dropped_irrelevant": 0,
     }
     if not items:
         return base
 
     # Dedupe by URL (fallback to title)
-    seen = set()
-    deduped = []
+    seen, deduped = set(), []
     for h in items:
         key = (h.get("link") or "").strip().lower() or h.get("title", "").strip().lower()
         if not key or key in seen:
@@ -166,9 +213,22 @@ def score_company(company, items):
         deduped.append(h)
 
     scored = []
+    dropped = 0
     for h in deduped:
-        s = ANALYZER.polarity_scores(h["title"])
-        scored.append({**h, "compound": s["compound"]})
+        relevant, confidence = relevancer.score(company, h)
+        if not relevant:
+            dropped += 1
+            continue
+        compound, pattern_hit = score_headline(h["title"])
+        scored.append({
+            **h,
+            "compound": round(compound, 3),
+            "relevance": round(confidence, 3),
+            "pattern_hit": pattern_hit,
+        })
+
+    if not scored:
+        return {**base, "dropped_irrelevant": dropped}
 
     pos = sum(1 for s in scored if s["compound"] >= 0.05)
     neg = sum(1 for s in scored if s["compound"] <= -0.05)
@@ -186,8 +246,21 @@ def score_company(company, items):
     dates = [s["pubDate"] for s in scored if s.get("pubDate")]
     last_seen = max(dates) if dates else None
 
-    by_strength = sorted(scored, key=lambda x: (-abs(x["compound"]), -(x.get("engagement") or 0)))
-    sample = by_strength[:10]
+    # Sort all headlines by notability; top-ranked is the "top signal"
+    scored.sort(key=lambda h: notability(h, now_ts), reverse=True)
+    top_signal = scored[0] if scored and abs(scored[0]["compound"]) >= 0.1 else None
+
+    # "Notable" = strong signal + recent (last 45 days) + meaningful relevance
+    notable = []
+    for h in scored[:15]:
+        if abs(h["compound"]) < 0.35:
+            continue
+        ts = parse_pubdate(h.get("pubDate"))
+        if ts and (now_ts - ts) / 86400 > 45:
+            continue
+        notable.append(h)
+        if len(notable) >= 5:
+            break
 
     return {
         **base,
@@ -198,20 +271,20 @@ def score_company(company, items):
         "by_locale": by_locale,
         "engagement": engagement,
         "last_seen": last_seen,
-        "headlines": sample,
+        "top_signal": top_signal,
+        "notable": notable,
+        "headlines": scored,
+        "dropped_irrelevant": dropped,
     }
 
 
 def compute_all():
     companies = load_companies()
+    relevancer = RelevanceScorer(companies)
+    now_ts = datetime.now(timezone.utc).timestamp()
     buckets = {c["name"]: [] for c in companies}
 
-    # Flatten all (company, task) pairs
-    all_tasks = []
-    for c in companies:
-        for kind, args in build_news_tasks(c):
-            all_tasks.append((c, kind, args))
-
+    all_tasks = [(c, k, a) for c in companies for (k, a) in build_news_tasks(c)]
     with ThreadPoolExecutor(max_workers=MAX_WORKERS) as ex:
         futs = {ex.submit(fetch_task, k, a, c): c for (c, k, a) in all_tasks}
         for fut in as_completed(futs):
@@ -223,13 +296,22 @@ def compute_all():
             except Exception:
                 pass
 
-    results = [score_company(c, buckets[c["name"]]) for c in companies]
+    results = [score_company(c, buckets[c["name"]], relevancer, now_ts) for c in companies]
     results.sort(key=lambda r: (-r["score"], r["name"]))
+
+    # Portfolio-wide notable feed (across all companies, last 45 days)
+    feed = []
+    for r in results:
+        for h in r.get("notable", []):
+            feed.append({**h, "company": r["name"], "region": r["region"]})
+    feed.sort(key=lambda h: notability(h, now_ts), reverse=True)
+    feed = feed[:20]
 
     return {
         "generated_at": datetime.now(timezone.utc).isoformat(),
         "total": len(results),
         "summary": summarize(results),
+        "notable_feed": feed,
         "companies": results,
     }
 
@@ -262,13 +344,13 @@ def summarize(results):
         "source_totals": source_totals,
         "locale_totals": locale_totals,
         "total_mentions": sum(r["count"] for r in covered),
+        "dropped_irrelevant": sum(r.get("dropped_irrelevant", 0) for r in results),
     }
 
 
 # ------- History -------
 
 def load_history():
-    """Read all snapshots from data/history/YYYY-MM-DD.json, newest first."""
     if not os.path.isdir(HISTORY_DIR):
         return []
     snapshots = []
