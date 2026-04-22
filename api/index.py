@@ -16,10 +16,9 @@ FETCH_TIMEOUT = 8
 MAX_WORKERS = 24
 
 ROOT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
-PUBLIC_DIR = os.path.join(ROOT_DIR, "public")
 DATA_PATH = os.path.join(ROOT_DIR, "data", "companies.json")
 
-app = Flask(__name__, static_folder=PUBLIC_DIR, static_url_path="")
+app = Flask(__name__, static_folder=ROOT_DIR, static_url_path="")
 
 
 def load_companies():
@@ -163,9 +162,9 @@ def sentiment():
 
 @app.route("/")
 def root():
-    return send_from_directory(PUBLIC_DIR, "index.html")
+    return send_from_directory(ROOT_DIR, "index.html")
 
 
 @app.route("/<path:path>")
 def static_file(path):
-    return send_from_directory(PUBLIC_DIR, path)
+    return send_from_directory(ROOT_DIR, path)
