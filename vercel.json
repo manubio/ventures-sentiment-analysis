@@ -1,10 +1,4 @@
 {
-  "functions": {
-    "api/sentiment.py": {
-      "maxDuration": 120,
-      "memory": 1024
-    }
-  },
   "crons": [
     {
       "path": "/api/sentiment",

@@ -1,15 +1,12 @@
-from http.server import BaseHTTPRequestHandler
 import json
 import os
-import sys
 import urllib.parse
 import urllib.request
 import xml.etree.ElementTree as ET
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime, timezone
 
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-
+from flask import Flask, jsonify, make_response, send_from_directory
 from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
 
 ANALYZER = SentimentIntensityAnalyzer()
@@ -18,10 +15,15 @@ MAX_HEADLINES = 15
 FETCH_TIMEOUT = 8
 MAX_WORKERS = 24
 
+ROOT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+PUBLIC_DIR = os.path.join(ROOT_DIR, "public")
+DATA_PATH = os.path.join(ROOT_DIR, "data", "companies.json")
+
+app = Flask(__name__, static_folder=PUBLIC_DIR, static_url_path="")
+
 
 def load_companies():
-    path = os.path.join(os.path.dirname(__file__), "..", "data", "companies.json")
-    with open(path, "r", encoding="utf-8") as f:
+    with open(DATA_PATH, "r", encoding="utf-8") as f:
         return json.load(f)["companies"]
 
 
@@ -53,25 +55,26 @@ def fetch_headlines(company):
             if len(items) >= MAX_HEADLINES:
                 break
         return items
-    except Exception as e:
-        return {"error": str(e), "items": []} if False else []
+    except Exception:
+        return []
 
 
 def score_company(company):
     headlines = fetch_headlines(company)
+    base = {
+        "name": company["name"],
+        "website": company["website"],
+        "region": company["region"],
+        "description": company.get("description", ""),
+        "count": 0,
+        "score": 0.0,
+        "pos": 0,
+        "neu": 0,
+        "neg": 0,
+        "headlines": [],
+    }
     if not headlines:
-        return {
-            "name": company["name"],
-            "website": company["website"],
-            "region": company["region"],
-            "description": company.get("description", ""),
-            "count": 0,
-            "score": 0.0,
-            "pos": 0,
-            "neu": 0,
-            "neg": 0,
-            "headlines": [],
-        }
+        return base
 
     scored = []
     for h in headlines:
@@ -86,19 +89,15 @@ def score_company(company):
     scored.sort(key=lambda x: x["compound"], reverse=True)
     top = scored[:3]
     bottom = [s for s in scored[-3:] if s not in top]
-    sample = top + bottom
 
     return {
-        "name": company["name"],
-        "website": company["website"],
-        "region": company["region"],
-        "description": company.get("description", ""),
+        **base,
         "count": len(scored),
         "score": round(avg, 3),
         "pos": pos,
         "neu": neu,
         "neg": neg,
-        "headlines": sample,
+        "headlines": top + bottom,
     }
 
 
@@ -111,29 +110,22 @@ def compute_all():
             i = futures[fut]
             try:
                 results[i] = fut.result()
-            except Exception as e:
+            except Exception:
                 c = companies[i]
                 results[i] = {
                     "name": c["name"],
                     "website": c["website"],
                     "region": c["region"],
                     "description": c.get("description", ""),
-                    "count": 0,
-                    "score": 0.0,
-                    "pos": 0,
-                    "neu": 0,
-                    "neg": 0,
+                    "count": 0, "score": 0.0, "pos": 0, "neu": 0, "neg": 0,
                     "headlines": [],
-                    "error": str(e),
                 }
 
     results.sort(key=lambda r: (-r["score"], r["name"]))
-    summary = summarize(results)
-
     return {
         "generated_at": datetime.now(timezone.utc).isoformat(),
         "total": len(results),
-        "summary": summary,
+        "summary": summarize(results),
         "companies": results,
     }
 
@@ -143,9 +135,7 @@ def summarize(results):
     regions = {}
     for r in covered:
         regions.setdefault(r["region"], []).append(r["score"])
-    region_avg = {
-        k: round(sum(v) / len(v), 3) for k, v in regions.items()
-    }
+    region_avg = {k: round(sum(v) / len(v), 3) for k, v in regions.items()}
 
     pos = sum(1 for r in covered if r["score"] >= 0.05)
     neg = sum(1 for r in covered if r["score"] <= -0.05)
@@ -162,25 +152,20 @@ def summarize(results):
     }
 
 
-class handler(BaseHTTPRequestHandler):
-    def do_GET(self):
-        try:
-            payload = compute_all()
-            body = json.dumps(payload).encode("utf-8")
-            self.send_response(200)
-            self.send_header("Content-Type", "application/json; charset=utf-8")
-            self.send_header("Cache-Control", "public, s-maxage=3600, stale-while-revalidate=86400")
-            self.send_header("Access-Control-Allow-Origin", "*")
-            self.send_header("Content-Length", str(len(body)))
-            self.end_headers()
-            self.wfile.write(body)
-        except Exception as e:
-            err = json.dumps({"error": str(e)}).encode("utf-8")
-            self.send_response(500)
-            self.send_header("Content-Type", "application/json")
-            self.send_header("Content-Length", str(len(err)))
-            self.end_headers()
-            self.wfile.write(err)
+@app.route("/api/sentiment")
+def sentiment():
+    payload = compute_all()
+    resp = make_response(jsonify(payload))
+    resp.headers["Cache-Control"] = "public, s-maxage=3600, stale-while-revalidate=86400"
+    resp.headers["Access-Control-Allow-Origin"] = "*"
+    return resp
 
-    def log_message(self, format, *args):
-        return
+
+@app.route("/")
+def root():
+    return send_from_directory(PUBLIC_DIR, "index.html")
+
+
+@app.route("/<path:path>")
+def static_file(path):
+    return send_from_directory(PUBLIC_DIR, path)
