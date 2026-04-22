@@ -26,12 +26,8 @@ def load_companies():
         return json.load(f)["companies"]
 
 
-def news_query(company):
+def query_for(company):
     return company.get("search") or f'"{company["name"]}"'
-
-
-def plain_query(company):
-    return f'"{company["name"]}"'
 
 
 def http_get(url, timeout=FETCH_TIMEOUT, user_agent=USER_AGENT):
@@ -67,7 +63,7 @@ def _google_news(query_str, origin="news"):
 
 
 def fetch_google_news(company):
-    return _google_news(news_query(company))
+    return _google_news(query_for(company))
 
 
 def fetch_google_news_domain(company):
@@ -78,7 +74,7 @@ def fetch_google_news_domain(company):
 
 
 def fetch_hn(company):
-    q = urllib.parse.quote(plain_query(company))
+    q = urllib.parse.quote(query_for(company))
     url = f"https://hn.algolia.com/api/v1/search?query={q}&tags=story&hitsPerPage={MAX_PER_SOURCE}"
     try:
         data = json.loads(http_get(url))
