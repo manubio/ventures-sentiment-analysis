@@ -60,7 +60,7 @@
     {"name": "Kismet", "website": "kismet.com", "region": "Australia", "description": "Care marketplace", "search": "\"Kismet\" care marketplace Australia"},
     {"name": "Avant Arte", "website": "avantarte.com", "region": "EU", "description": "Online art marketplace"},
     {"name": "Beauty Haul", "website": "beautyhaul.com", "region": "SE Asia", "description": "Indonesia beauty e-commerce"},
-    {"name": "Mevo", "website": "mevo.com", "region": "LatAm", "description": "Digital prescription pharmacy", "search": "\"Mevo\" Brazil pharmacy"},
+    {"name": "Mevo", "website": "mevo.com.br", "region": "LatAm", "description": "Digital prescription pharmacy", "search": "\"Mevo\" Brazil pharmacy"},
     {"name": "Dott", "website": "ridedott.com", "region": "EU", "description": "Micromobility operator", "search": "\"Ride Dott\" OR \"Dott\" scooter Europe"},
     {"name": "99 Minutos", "website": "99minutos.com", "region": "LatAm", "description": "Last-mile delivery"},
     {"name": "Shipper", "website": "shipper.id", "region": "SE Asia", "description": "Indonesia logistics", "search": "\"Shipper\" Indonesia logistics"},
