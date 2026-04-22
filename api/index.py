@@ -10,10 +10,10 @@ from flask import Flask, jsonify, make_response, send_from_directory
 from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
 
 ANALYZER = SentimentIntensityAnalyzer()
-USER_AGENT = "Mozilla/5.0 (compatible; VenturesSentimentBot/1.0)"
-MAX_HEADLINES = 15
+USER_AGENT = "Mozilla/5.0 (compatible; VenturesSentimentBot/1.0; +https://ventures-portfolio-sentiment.vercel.app)"
 FETCH_TIMEOUT = 8
-MAX_WORKERS = 24
+MAX_WORKERS = 48
+MAX_PER_SOURCE = 40
 
 ROOT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 DATA_PATH = os.path.join(ROOT_DIR, "data", "companies.json")
@@ -26,40 +26,86 @@ def load_companies():
         return json.load(f)["companies"]
 
 
-def build_query(company):
-    if company.get("search"):
-        return company["search"]
+def news_query(company):
+    return company.get("search") or f'"{company["name"]}"'
+
+
+def plain_query(company):
     return f'"{company["name"]}"'
 
 
-def fetch_headlines(company):
-    query = urllib.parse.quote(build_query(company))
-    url = f"https://news.google.com/rss/search?q={query}+when:90d&hl=en-US&gl=US&ceid=US:en"
+def http_get(url, timeout=FETCH_TIMEOUT, user_agent=USER_AGENT):
+    req = urllib.request.Request(url, headers={"User-Agent": user_agent, "Accept": "*/*"})
+    with urllib.request.urlopen(req, timeout=timeout) as resp:
+        return resp.read()
+
+
+def _google_news(query_str, origin="news"):
+    q = urllib.parse.quote(query_str)
+    url = f"https://news.google.com/rss/search?q={q}+when:365d&hl=en-US&gl=US&ceid=US:en"
     try:
-        req = urllib.request.Request(url, headers={"User-Agent": USER_AGENT})
-        with urllib.request.urlopen(req, timeout=FETCH_TIMEOUT) as resp:
-            data = resp.read()
-        root = ET.fromstring(data)
-        items = []
-        for item in root.iter("item"):
-            title = (item.findtext("title") or "").strip()
-            source = ""
-            src_el = item.find("source")
-            if src_el is not None and src_el.text:
-                source = src_el.text.strip()
-            link = (item.findtext("link") or "").strip()
-            pub = (item.findtext("pubDate") or "").strip()
-            if title:
-                items.append({"title": title, "source": source, "link": link, "pubDate": pub})
-            if len(items) >= MAX_HEADLINES:
-                break
-        return items
+        root = ET.fromstring(http_get(url))
     except Exception:
         return []
+    items = []
+    for item in root.iter("item"):
+        title = (item.findtext("title") or "").strip()
+        if not title:
+            continue
+        src = item.find("source")
+        items.append({
+            "origin": origin,
+            "title": title,
+            "source": (src.text.strip() if (src is not None and src.text) else "Google News"),
+            "link": (item.findtext("link") or "").strip(),
+            "pubDate": (item.findtext("pubDate") or "").strip(),
+            "engagement": 0,
+        })
+        if len(items) >= MAX_PER_SOURCE:
+            break
+    return items
 
 
-def score_company(company):
-    headlines = fetch_headlines(company)
+def fetch_google_news(company):
+    return _google_news(news_query(company))
+
+
+def fetch_google_news_domain(company):
+    dom = company.get("website", "")
+    if not dom:
+        return []
+    return _google_news(f'"{dom}"', origin="news")
+
+
+def fetch_hn(company):
+    q = urllib.parse.quote(plain_query(company))
+    url = f"https://hn.algolia.com/api/v1/search?query={q}&tags=story&hitsPerPage={MAX_PER_SOURCE}"
+    try:
+        data = json.loads(http_get(url))
+    except Exception:
+        return []
+    items = []
+    for hit in data.get("hits", []):
+        title = (hit.get("title") or hit.get("story_title") or "").strip()
+        if not title:
+            continue
+        points = int(hit.get("points") or 0)
+        comments = int(hit.get("num_comments") or 0)
+        items.append({
+            "origin": "hn",
+            "title": title,
+            "source": f"HN · {hit.get('author', '')}",
+            "link": hit.get("url") or f"https://news.ycombinator.com/item?id={hit.get('objectID','')}",
+            "pubDate": hit.get("created_at", ""),
+            "engagement": points + comments,
+        })
+    return items
+
+
+SOURCES = [fetch_google_news, fetch_google_news_domain, fetch_hn]
+
+
+def score_company(company, items):
     base = {
         "name": company["name"],
         "website": company["website"],
@@ -70,13 +116,25 @@ def score_company(company):
         "pos": 0,
         "neu": 0,
         "neg": 0,
+        "by_source": {"news": 0, "hn": 0},
+        "engagement": 0,
+        "last_seen": None,
         "headlines": [],
     }
-    if not headlines:
+    if not items:
         return base
 
+    seen = set()
+    deduped = []
+    for h in items:
+        key = (h.get("link") or "").strip().lower() or h.get("title", "").strip().lower()
+        if key in seen:
+            continue
+        seen.add(key)
+        deduped.append(h)
+
     scored = []
-    for h in headlines:
+    for h in deduped:
         s = ANALYZER.polarity_scores(h["title"])
         scored.append({**h, "compound": s["compound"]})
 
@@ -85,42 +143,50 @@ def score_company(company):
     neu = len(scored) - pos - neg
     avg = sum(s["compound"] for s in scored) / len(scored)
 
-    scored.sort(key=lambda x: x["compound"], reverse=True)
-    top = scored[:3]
-    bottom = [s for s in scored[-3:] if s not in top]
+    by_source = {"news": 0, "reddit": 0, "hn": 0}
+    for s in scored:
+        by_source[s["origin"]] = by_source.get(s["origin"], 0) + 1
+
+    engagement = sum(s.get("engagement", 0) for s in scored)
+
+    dates = [s["pubDate"] for s in scored if s.get("pubDate")]
+    last_seen = max(dates) if dates else None
+
+    # Sample: mix of strongest pos/neg signals + most engaging
+    by_strength = sorted(scored, key=lambda x: (-abs(x["compound"]), -(x.get("engagement") or 0)))
+    sample = by_strength[:10]
 
     return {
         **base,
         "count": len(scored),
         "score": round(avg, 3),
-        "pos": pos,
-        "neu": neu,
-        "neg": neg,
-        "headlines": top + bottom,
+        "pos": pos, "neu": neu, "neg": neg,
+        "by_source": by_source,
+        "engagement": engagement,
+        "last_seen": last_seen,
+        "headlines": sample,
     }
 
 
 def compute_all():
     companies = load_companies()
-    results = [None] * len(companies)
-    with ThreadPoolExecutor(max_workers=MAX_WORKERS) as ex:
-        futures = {ex.submit(score_company, c): i for i, c in enumerate(companies)}
-        for fut in as_completed(futures):
-            i = futures[fut]
-            try:
-                results[i] = fut.result()
-            except Exception:
-                c = companies[i]
-                results[i] = {
-                    "name": c["name"],
-                    "website": c["website"],
-                    "region": c["region"],
-                    "description": c.get("description", ""),
-                    "count": 0, "score": 0.0, "pos": 0, "neu": 0, "neg": 0,
-                    "headlines": [],
-                }
+    buckets = {c["name"]: [] for c in companies}
 
+    tasks = [(c, src) for c in companies for src in SOURCES]
+    with ThreadPoolExecutor(max_workers=MAX_WORKERS) as ex:
+        futures = {ex.submit(src, c): c for c, src in tasks}
+        for fut in as_completed(futures):
+            c = futures[fut]
+            try:
+                items = fut.result()
+                if items:
+                    buckets[c["name"]].extend(items)
+            except Exception:
+                pass
+
+    results = [score_company(c, buckets[c["name"]]) for c in companies]
     results.sort(key=lambda r: (-r["score"], r["name"]))
+
     return {
         "generated_at": datetime.now(timezone.utc).isoformat(),
         "total": len(results),
@@ -140,6 +206,11 @@ def summarize(results):
     neg = sum(1 for r in covered if r["score"] <= -0.05)
     neu = len(covered) - pos - neg
 
+    source_totals = {"news": 0, "hn": 0}
+    for r in covered:
+        for k, v in r["by_source"].items():
+            source_totals[k] = source_totals.get(k, 0) + v
+
     return {
         "covered": len(covered),
         "no_coverage": len(results) - len(covered),
@@ -148,6 +219,8 @@ def summarize(results):
         "negative": neg,
         "average_score": round(sum(r["score"] for r in covered) / len(covered), 3) if covered else 0.0,
         "region_average": region_avg,
+        "source_totals": source_totals,
+        "total_mentions": sum(r["count"] for r in covered),
     }
 
 

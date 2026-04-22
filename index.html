@@ -32,7 +32,7 @@
   }
   h1 { margin: 0; font-size: 22px; letter-spacing: 0.2px; }
   .sub { color: var(--muted); font-size: 13px; margin-top: 4px; }
-  .container { max-width: 1280px; margin: 0 auto; padding: 24px 32px 64px; }
+  .container { max-width: 1360px; margin: 0 auto; padding: 24px 32px 64px; }
   .row { display: grid; gap: 16px; }
   .kpis { grid-template-columns: repeat(5, 1fr); }
   @media (max-width: 900px) { .kpis { grid-template-columns: repeat(2, 1fr); } }
@@ -40,8 +40,9 @@
     background: var(--panel); border: 1px solid var(--border); border-radius: 12px;
     padding: 16px;
   }
-  .kpi-label { color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: 0.6px; }
+  .kpi-label { color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: 0.6px; }
   .kpi-value { font-size: 26px; font-weight: 600; margin-top: 6px; }
+  .kpi-sub { color: var(--muted); font-size: 11.5px; margin-top: 4px; min-height: 15px; }
   .kpi-value.pos { color: var(--pos); }
   .kpi-value.neg { color: var(--neg); }
   .kpi-value.neu { color: var(--neu); }
@@ -62,27 +63,33 @@
   .grid-2 { grid-template-columns: 1fr 1fr; }
   @media (max-width: 900px) { .grid-2 { grid-template-columns: 1fr; } }
   table { width: 100%; border-collapse: collapse; }
-  th, td { padding: 10px 12px; text-align: left; border-bottom: 1px solid var(--border); font-size: 13px; vertical-align: top; }
-  th { color: var(--muted); font-weight: 500; font-size: 12px; text-transform: uppercase; letter-spacing: 0.4px; cursor: pointer; user-select: none; }
-  th.sorted::after { content: attr(data-dir); margin-left: 6px; color: var(--accent); }
+  th, td { padding: 12px 14px; text-align: left; border-bottom: 1px solid var(--border); font-size: 13px; vertical-align: top; }
+  th { color: var(--muted); font-weight: 500; font-size: 11px; text-transform: uppercase; letter-spacing: 0.4px; }
   tr.company:hover { background: var(--panel-2); }
-  .score-cell { display: flex; align-items: center; gap: 8px; min-width: 160px; }
-  .bar { position: relative; width: 100px; height: 8px; border-radius: 4px; background: var(--panel-2); overflow: hidden; }
-  .bar .fill { position: absolute; top: 0; bottom: 0; left: 50%; }
-  .score-num { font-variant-numeric: tabular-nums; min-width: 44px; }
+  .score-cell { display: flex; align-items: center; gap: 8px; min-width: 170px; }
+  .bar { position: relative; width: 110px; height: 8px; border-radius: 4px; background: var(--panel-2); overflow: hidden; }
+  .bar .fill { position: absolute; top: 0; bottom: 0; }
+  .score-num { font-variant-numeric: tabular-nums; min-width: 48px; font-weight: 600; }
   .badge {
     display: inline-block; font-size: 11px; padding: 2px 8px; border-radius: 999px;
     background: var(--panel-2); color: var(--muted); border: 1px solid var(--border);
   }
-  details summary { cursor: pointer; color: var(--muted); font-size: 12px; }
+  .src-chip {
+    display: inline-block; font-size: 10.5px; padding: 1px 7px; border-radius: 4px;
+    background: var(--panel-2); color: var(--muted); margin-right: 4px;
+    font-variant-numeric: tabular-nums;
+  }
+  .src-chip.news { color: #91c1ff; }
+  .src-chip.hn   { color: #ffad6e; }
+  details summary { cursor: pointer; color: var(--muted); font-size: 12px; list-style: none; }
   details summary::-webkit-details-marker { display: none; }
   details[open] summary::before { content: "▾ "; }
   details:not([open]) summary::before { content: "▸ "; }
-  details ul { margin: 8px 0 0; padding: 0 0 0 18px; }
-  details li { margin: 4px 0; font-size: 12.5px; color: var(--text); }
-  details li .src { color: var(--muted); font-size: 11px; margin-left: 4px; }
-  .pill-pos { color: var(--pos); }
-  .pill-neg { color: var(--neg); }
+  details ul { margin: 10px 0 0; padding: 0 0 0 18px; }
+  details li { margin: 6px 0; font-size: 12.5px; color: var(--text); line-height: 1.4; }
+  details li .meta { color: var(--muted); font-size: 11px; margin-top: 2px; display: block; }
+  .pill-pos { color: var(--pos); font-variant-numeric: tabular-nums; }
+  .pill-neg { color: var(--neg); font-variant-numeric: tabular-nums; }
   .muted { color: var(--muted); }
   .loader {
     display: flex; align-items: center; justify-content: center;
@@ -95,15 +102,16 @@
   .dot:nth-child(2) { animation-delay: 0.2s; }
   .dot:nth-child(3) { animation-delay: 0.4s; }
   @keyframes pulse { 0%, 80%, 100% { opacity: 0.3; } 40% { opacity: 1; } }
-  .section-title { margin: 24px 0 12px; font-size: 13px; text-transform: uppercase; letter-spacing: 0.6px; color: var(--muted); }
+  .section-title { margin: 0 0 12px; font-size: 12px; text-transform: uppercase; letter-spacing: 0.6px; color: var(--muted); }
   canvas { max-height: 280px; }
+  .engagement { color: var(--accent); font-variant-numeric: tabular-nums; font-size: 12px; }
 </style>
 </head>
 <body>
 <header>
   <div>
     <h1>Prosus Ventures — Portfolio Sentiment</h1>
-    <div class="sub">News-driven sentiment for <span id="total-count">—</span> portfolio companies · sourced from public Google News · scored with VADER</div>
+    <div class="sub">Live sentiment across <span id="total-count">—</span> portfolio companies · Google News + Hacker News (last 12 months) · scored with VADER</div>
   </div>
   <div class="sub">Updated: <span id="generated-at">—</span> · <button onclick="load(true)" style="margin-left:8px; background:transparent; color:var(--accent); border:none; cursor:pointer;">refresh</button></div>
 </header>
@@ -112,32 +120,32 @@
 
   <div id="loader" class="loader">
     <div class="dot"></div><div class="dot"></div><div class="dot"></div>
-    <span>Fetching news and scoring 93 companies… first load can take 30–60s</span>
+    <span>Fetching news &amp; Hacker News for 93 companies… first load takes 5–15s</span>
   </div>
 
   <div id="content" style="display:none">
 
     <div class="row kpis">
-      <div class="card"><div class="kpi-label">Tracked</div><div class="kpi-value" id="k-total">—</div></div>
-      <div class="card"><div class="kpi-label">Avg score</div><div class="kpi-value" id="k-avg">—</div></div>
-      <div class="card"><div class="kpi-label">Positive</div><div class="kpi-value pos" id="k-pos">—</div></div>
-      <div class="card"><div class="kpi-label">Neutral</div><div class="kpi-value neu" id="k-neu">—</div></div>
-      <div class="card"><div class="kpi-label">Negative</div><div class="kpi-value neg" id="k-neg">—</div></div>
+      <div class="card"><div class="kpi-label">Tracked</div><div class="kpi-value" id="k-total">—</div><div class="kpi-sub" id="k-total-sub"></div></div>
+      <div class="card"><div class="kpi-label">Avg sentiment</div><div class="kpi-value" id="k-avg">—</div><div class="kpi-sub" id="k-avg-sub"></div></div>
+      <div class="card"><div class="kpi-label">Positive</div><div class="kpi-value pos" id="k-pos">—</div><div class="kpi-sub" id="k-pos-sub"></div></div>
+      <div class="card"><div class="kpi-label">Neutral</div><div class="kpi-value neu" id="k-neu">—</div><div class="kpi-sub" id="k-neu-sub"></div></div>
+      <div class="card"><div class="kpi-label">Negative</div><div class="kpi-value neg" id="k-neg">—</div><div class="kpi-sub" id="k-neg-sub"></div></div>
     </div>
 
     <div class="row grid-2" style="margin-top:16px">
       <div class="card">
-        <div class="section-title" style="margin-top:0">Sentiment by region</div>
+        <div class="section-title">Sentiment by region</div>
         <canvas id="region-chart"></canvas>
       </div>
       <div class="card">
-        <div class="section-title" style="margin-top:0">Distribution</div>
+        <div class="section-title">Distribution of company scores</div>
         <canvas id="dist-chart"></canvas>
       </div>
     </div>
 
     <div class="tools">
-      <input id="q" type="search" placeholder="Search company…" oninput="render()" />
+      <input id="q" type="search" placeholder="Search company or description…" oninput="render()" />
       <select id="region" onchange="render()">
         <option value="">All regions</option>
       </select>
@@ -146,6 +154,7 @@
         <option value="score-asc">Score ↑</option>
         <option value="name">Name A-Z</option>
         <option value="count-desc">Coverage ↓</option>
+        <option value="buzz-desc">Buzz ↓</option>
       </select>
       <span class="muted" id="filter-count" style="margin-left:auto"></span>
     </div>
@@ -157,8 +166,11 @@
             <th>Company</th>
             <th>Region</th>
             <th>Sentiment</th>
-            <th>Mix (pos/neu/neg)</th>
-            <th>Headlines</th>
+            <th>Mix</th>
+            <th>Sources</th>
+            <th>Buzz</th>
+            <th>Last seen</th>
+            <th>Sample headlines</th>
           </tr>
         </thead>
         <tbody id="tbody"></tbody>
@@ -192,11 +204,16 @@ function hydrate() {
   document.getElementById("generated-at").textContent = new Date(DATA.generated_at).toLocaleString();
 
   const s = DATA.summary;
-  document.getElementById("k-total").textContent = s.covered + " / " + DATA.total;
+  document.getElementById("k-total").textContent = s.covered + "/" + DATA.total;
+  document.getElementById("k-total-sub").textContent = s.total_mentions.toLocaleString() + " mentions";
   document.getElementById("k-avg").textContent = fmt(s.average_score);
+  document.getElementById("k-avg-sub").textContent = "across covered companies";
   document.getElementById("k-pos").textContent = s.positive;
+  document.getElementById("k-pos-sub").textContent = pct(s.positive, s.covered);
   document.getElementById("k-neu").textContent = s.neutral;
+  document.getElementById("k-neu-sub").textContent = pct(s.neutral, s.covered);
   document.getElementById("k-neg").textContent = s.negative;
+  document.getElementById("k-neg-sub").textContent = pct(s.negative, s.covered);
 
   const regionSel = document.getElementById("region");
   const regions = [...new Set(DATA.companies.map(c => c.region))].sort();
@@ -214,9 +231,33 @@ function hydrate() {
   document.getElementById("content").style.display = "block";
 }
 
+function pct(n, total) {
+  if (!total) return "—";
+  return Math.round((n / total) * 100) + "%";
+}
+
 function fmt(n) {
   if (n === null || n === undefined) return "—";
   return (n >= 0 ? "+" : "") + n.toFixed(3);
+}
+
+function fmtNum(n) {
+  if (!n) return "0";
+  if (n >= 1000) return (n / 1000).toFixed(1) + "k";
+  return String(n);
+}
+
+function fmtDate(iso) {
+  if (!iso) return "—";
+  try {
+    const d = new Date(iso);
+    const days = Math.floor((Date.now() - d.getTime()) / 86400000);
+    if (days < 1) return "today";
+    if (days < 7) return days + "d ago";
+    if (days < 30) return Math.floor(days / 7) + "w ago";
+    if (days < 365) return Math.floor(days / 30) + "mo ago";
+    return Math.floor(days / 365) + "y ago";
+  } catch { return "—"; }
 }
 
 function scoreColor(n) {
@@ -238,8 +279,10 @@ function render() {
   else if (sort === "score-asc") rows.sort((a,b) => a.score - b.score);
   else if (sort === "name") rows.sort((a,b) => a.name.localeCompare(b.name));
   else if (sort === "count-desc") rows.sort((a,b) => b.count - a.count);
+  else if (sort === "buzz-desc") rows.sort((a,b) => (b.engagement||0) - (a.engagement||0));
 
-  document.getElementById("filter-count").textContent = rows.length + " shown";
+  document.getElementById("filter-count").textContent = rows.length + " shown · " +
+    rows.reduce((s,r) => s + r.count, 0).toLocaleString() + " mentions";
 
   const tbody = document.getElementById("tbody");
   tbody.innerHTML = "";
@@ -247,15 +290,25 @@ function render() {
     const tr = document.createElement("tr");
     tr.className = "company";
 
-    const width = Math.min(50, Math.abs(c.score) * 50);
+    const width = Math.min(55, Math.abs(c.score) * 55);
     const left = c.score >= 0 ? 50 : 50 - width;
     const color = scoreColor(c.score);
+    const bs = c.by_source || {news: 0, hn: 0};
 
     const heads = (c.headlines || []).map(h => {
       const col = h.compound >= 0.05 ? "var(--pos)" : (h.compound <= -0.05 ? "var(--neg)" : "var(--muted)");
       const link = h.link ? `<a href="${h.link}" target="_blank" rel="noopener">${esc(h.title)}</a>` : esc(h.title);
-      return `<li><span style="color:${col}">●</span> ${link} <span class="src">${esc(h.source || "")}</span></li>`;
+      const origin = h.origin === "hn" ? `<span class="src-chip hn">HN</span>` : `<span class="src-chip news">news</span>`;
+      const eng = h.engagement > 0 ? ` · <span class="engagement">${fmtNum(h.engagement)} ↑</span>` : "";
+      return `<li>
+        <span style="color:${col}">●</span> ${origin}${link}
+        <span class="meta">${esc(h.source || "")} · ${fmtDate(h.pubDate)} · score ${fmt(h.compound)}${eng}</span>
+      </li>`;
     }).join("");
+
+    const srcChips = [];
+    if (bs.news) srcChips.push(`<span class="src-chip news">news ${bs.news}</span>`);
+    if (bs.hn)   srcChips.push(`<span class="src-chip hn">HN ${bs.hn}</span>`);
 
     tr.innerHTML = `
       <td>
@@ -276,10 +329,13 @@ function render() {
         <span class="pill-pos">${c.pos}</span> /
         <span class="muted">${c.neu}</span> /
         <span class="pill-neg">${c.neg}</span>
-        <span class="muted" style="margin-left:6px">(n=${c.count})</span>
+        <div class="muted" style="font-size:11px">n=${c.count}</div>
       </td>
+      <td>${srcChips.join("") || '<span class="muted">—</span>'}</td>
+      <td>${c.engagement > 0 ? `<span class="engagement">${fmtNum(c.engagement)} ↑</span>` : '<span class="muted">—</span>'}</td>
+      <td class="muted" style="font-size:12px">${fmtDate(c.last_seen)}</td>
       <td>
-        ${c.count > 0 ? `<details><summary>sample ${Math.min(c.headlines.length, c.count)}</summary><ul>${heads}</ul></details>` : '<span class="muted">no coverage</span>'}
+        ${c.count > 0 ? `<details><summary>sample ${c.headlines.length}</summary><ul>${heads}</ul></details>` : '<span class="muted">no coverage</span>'}
       </td>
     `;
     tbody.appendChild(tr);
@@ -320,7 +376,7 @@ function drawDistChart(companies) {
     let i = Math.min(9, Math.max(0, Math.floor((c.score + 1) * 5)));
     bins[i]++;
   }
-  const colors = labels.map((_, i) => i < 4 ? "#e35e5e" : i === 4 || i === 5 ? "#8a94b4" : "#2fc27a");
+  const colors = labels.map((_, i) => i < 4 ? "#e35e5e" : (i === 4 || i === 5 ? "#8a94b4" : "#2fc27a"));
 
   if (distChart) distChart.destroy();
   distChart = new Chart(document.getElementById("dist-chart"), {
