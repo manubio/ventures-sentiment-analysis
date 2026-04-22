@@ -1,11 +1,14 @@
 import glob
 import json
 import os
+import sys
 import urllib.parse
 import urllib.request
 import xml.etree.ElementTree as ET
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime, timezone
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from flask import Flask, jsonify, make_response, send_from_directory
 from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
