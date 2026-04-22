@@ -14,6 +14,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from flask import Flask, jsonify, make_response, send_from_directory
 from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
 
+import events
 import lexicon
 import patterns as pattern_rules
 import sources
@@ -193,11 +194,14 @@ def score_company(company, items, relevancer, now_ts):
         "region": company["region"],
         "type": company.get("type", ""),
         "description": company.get("description", ""),
-        "count": 0, "score": 0.0,
+        "count": 0,            # cluster count (distinct stories)
+        "raw_count": 0,        # raw headline count (after URL dedupe)
+        "score": 0.0,
         "pos": 0, "neu": 0, "neg": 0,
         "by_source": {"news": 0, "hn": 0},
         "by_locale": {},
         "by_tier": {1: 0, 2: 0, 3: 0},
+        "by_event": {},
         "engagement": 0,
         "last_seen": None,
         "top_signal": None,
@@ -237,31 +241,39 @@ def score_company(company, items, relevancer, now_ts):
     if not scored:
         return {**base, "dropped_irrelevant": dropped}
 
-    pos = sum(1 for s in scored if s["compound"] >= 0.05)
-    neg = sum(1 for s in scored if s["compound"] <= -0.05)
-    neu = len(scored) - pos - neg
-    avg = sum(s["compound"] for s in scored) / len(scored)
+    # Cluster near-duplicate stories before computing stats
+    all_headlines, cluster_heads = events.cluster_headlines(scored)
 
+    # Stats derived from CLUSTERS (one vote per distinct story)
+    pos = sum(1 for s in cluster_heads if s["compound"] >= 0.05)
+    neg = sum(1 for s in cluster_heads if s["compound"] <= -0.05)
+    neu = len(cluster_heads) - pos - neg
+    avg = sum(s["compound"] for s in cluster_heads) / len(cluster_heads)
+
+    # Mix breakdowns: by raw headline (gives a feel for coverage breadth)
     by_source = {"news": 0, "hn": 0}
     by_locale = {}
     by_tier = {1: 0, 2: 0, 3: 0}
-    for s in scored:
+    by_event = {}
+    for s in all_headlines:
         by_source[s["origin"]] = by_source.get(s["origin"], 0) + 1
         loc = s.get("locale", "en")
         by_locale[loc] = by_locale.get(loc, 0) + 1
         by_tier[s.get("tier", 2)] = by_tier.get(s.get("tier", 2), 0) + 1
+    for s in cluster_heads:
+        cat = s.get("event_category", "other")
+        by_event[cat] = by_event.get(cat, 0) + 1
 
-    engagement = sum(s.get("engagement", 0) for s in scored)
-    dates = [s["pubDate"] for s in scored if s.get("pubDate")]
+    engagement = sum(s.get("engagement", 0) for s in all_headlines)
+    dates = [s["pubDate"] for s in all_headlines if s.get("pubDate")]
     last_seen = max(dates) if dates else None
 
-    # Sort all headlines by notability; top-ranked is the "top signal"
-    scored.sort(key=lambda h: notability(h, now_ts), reverse=True)
-    top_signal = scored[0] if scored and abs(scored[0]["compound"]) >= 0.1 else None
+    # Rank cluster heads by notability; top one is the top signal
+    cluster_heads.sort(key=lambda h: notability(h, now_ts), reverse=True)
+    top_signal = cluster_heads[0] if cluster_heads and abs(cluster_heads[0]["compound"]) >= 0.1 else None
 
-    # "Notable" = strong signal + recent (last 45 days) + meaningful relevance
     notable = []
-    for h in scored[:15]:
+    for h in cluster_heads[:20]:
         if abs(h["compound"]) < 0.35:
             continue
         ts = parse_pubdate(h.get("pubDate"))
@@ -273,17 +285,19 @@ def score_company(company, items, relevancer, now_ts):
 
     return {
         **base,
-        "count": len(scored),
+        "count": len(cluster_heads),
+        "raw_count": len(all_headlines),
         "score": round(avg, 3),
         "pos": pos, "neu": neu, "neg": neg,
         "by_source": by_source,
         "by_locale": by_locale,
         "by_tier": by_tier,
+        "by_event": by_event,
         "engagement": engagement,
         "last_seen": last_seen,
         "top_signal": top_signal,
         "notable": notable,
-        "headlines": scored,
+        "headlines": all_headlines,  # full list with cluster_id on each
         "dropped_irrelevant": dropped,
     }
 
@@ -357,7 +371,8 @@ def summarize(results):
         "source_totals": source_totals,
         "locale_totals": locale_totals,
         "tier_totals": tier_totals,
-        "total_mentions": sum(r["count"] for r in covered),
+        "total_mentions": sum(r.get("raw_count", r["count"]) for r in covered),
+        "total_clusters": sum(r["count"] for r in covered),
         "dropped_irrelevant": sum(r.get("dropped_irrelevant", 0) for r in results),
     }
 

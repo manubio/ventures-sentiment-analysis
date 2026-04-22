@@ -122,6 +122,33 @@
   .delta-down { color: var(--neg); }
   .top-signal { max-width: 340px; font-size: 12.5px; line-height: 1.35; }
   .top-signal .dot-inline { display: inline-block; width: 6px; height: 6px; border-radius: 50%; margin-right: 6px; vertical-align: middle; }
+  .cluster-chip {
+    display: inline-block; font-size: 10px; padding: 1px 6px; border-radius: 999px;
+    background: var(--bg); color: var(--accent); border: 1px solid var(--accent);
+    margin: 0 4px; font-weight: 600; font-variant-numeric: tabular-nums;
+  }
+  .band-chip {
+    display: inline-block; font-size: 10px; padding: 1px 7px; border-radius: 4px;
+    font-weight: 600; letter-spacing: 0.3px; margin-left: 4px;
+  }
+  .band-very-pos { background: rgba(47,194,122,0.18); color: var(--pos); border: 1px solid var(--pos); }
+  .band-pos     { background: rgba(47,194,122,0.10); color: var(--pos); }
+  .band-mixed   { background: var(--panel-2); color: var(--muted); }
+  .band-neg     { background: rgba(227,94,94,0.10); color: var(--neg); }
+  .band-very-neg { background: rgba(227,94,94,0.18); color: var(--neg); border: 1px solid var(--neg); }
+  .pctile-chip {
+    display: inline-block; font-size: 10px; padding: 1px 6px; border-radius: 4px;
+    background: var(--panel-2); color: var(--muted); margin-left: 4px;
+    font-variant-numeric: tabular-nums;
+  }
+  .cluster-siblings {
+    margin-top: 6px; padding-left: 18px; border-left: 2px solid var(--border);
+  }
+  .cluster-siblings > div {
+    padding: 5px 0; font-size: 12px; color: var(--muted);
+  }
+  .cluster-siblings a { color: var(--muted); }
+  .cluster-siblings a:hover { color: var(--accent); }
   .pill-pos { color: var(--pos); font-variant-numeric: tabular-nums; }
   .pill-neg { color: var(--neg); font-variant-numeric: tabular-nums; }
   .muted { color: var(--muted); }
@@ -561,11 +588,15 @@ function renderNotable() {
     const color = h.compound >= 0.05 ? "var(--pos)" : (h.compound <= -0.05 ? "var(--neg)" : "var(--muted)");
     const link = h.link ? `<a href="${h.link}" target="_blank" rel="noopener">${esc(h.title)}</a>` : esc(h.title);
     const tierChip = tierBadge(h.tier);
+    const sz = h.cluster_size || 1;
+    const clusterChip = sz > 1 ? `<span class="cluster-chip" title="Reported by ${sz} outlets">+${sz - 1} outlet${sz > 2 ? "s" : ""}</span>` : "";
+    const catChip = h.event_category && h.event_category !== "other"
+      ? `<span class="loc-chip" style="color:var(--accent)">${esc(h.event_category)}</span>` : "";
     return `
       <div class="notable-item">
         <div class="notable-score" style="color:${color}">${fmt(h.compound)}</div>
         <div>
-          <div class="notable-title">${tierChip}${link}</div>
+          <div class="notable-title">${tierChip}${catChip}${link}${clusterChip}</div>
           <div class="notable-meta">${esc(h.source || "")} · ${fmtDate(h.pubDate)}${h.engagement > 0 ? ' · ' + fmtNum(h.engagement) + ' ↑' : ''}</div>
         </div>
         <div class="notable-company" onclick="openModal('${esc(h.company).replace(/'/g, "\\\\'")}')">${esc(h.company)}</div>
@@ -642,6 +673,54 @@ function scoreColor(n) {
   if (n >= 0.05) return "var(--pos)";
   if (n <= -0.05) return "var(--neg)";
   return "var(--neu)";
+}
+
+function band(n) {
+  if (n >= 0.4)  return { label: "Very positive", cls: "band-very-pos" };
+  if (n >= 0.1)  return { label: "Positive",     cls: "band-pos" };
+  if (n > -0.1)  return { label: "Mixed",        cls: "band-mixed" };
+  if (n > -0.4)  return { label: "Negative",     cls: "band-neg" };
+  return           { label: "Very negative", cls: "band-very-neg" };
+}
+
+function bandChip(n) {
+  const b = band(n);
+  return `<span class="band-chip ${b.cls}" title="Score band">${b.label}</span>`;
+}
+
+function percentile(value, peers) {
+  // peers: array of numbers (scores). Return 1–100 (percent of peers with
+  // score ≤ this one). Null if not enough peers.
+  if (!peers || peers.length < 3) return null;
+  const sorted = peers.slice().sort((a, b) => a - b);
+  let leq = 0;
+  for (const v of sorted) {
+    if (v <= value) leq++;
+  }
+  return Math.round((leq / sorted.length) * 100);
+}
+
+function peerPctiles(c) {
+  const regionPeers = DATA.companies.filter(x => x.region === c.region && x.count > 0).map(x => x.score);
+  const typePeers   = DATA.companies.filter(x => x.type === c.type && x.count > 0).map(x => x.score);
+  return {
+    region: percentile(c.score, regionPeers),
+    type:   c.type ? percentile(c.score, typePeers) : null,
+  };
+}
+
+function ordinalSuffix(n) {
+  const s = ["th", "st", "nd", "rd"];
+  const v = n % 100;
+  return s[(v - 20) % 10] || s[v] || s[0];
+}
+
+function pctileChips(c) {
+  const p = peerPctiles(c);
+  const parts = [];
+  if (p.region !== null) parts.push(`<span class="pctile-chip" title="Percentile within ${esc(c.region)} (${DATA.companies.filter(x => x.region === c.region && x.count > 0).length} peers)">${p.region}${ordinalSuffix(p.region)} in ${esc(c.region)}</span>`);
+  if (p.type !== null)   parts.push(`<span class="pctile-chip" title="Percentile within ${esc(c.type)} (${DATA.companies.filter(x => x.type === c.type && x.count > 0).length} peers)">${p.type}${ordinalSuffix(p.type)} in ${esc(c.type)}</span>`);
+  return parts.join("");
 }
 
 function sparkline(points, width=70, height=20) {
@@ -734,8 +813,11 @@ function render() {
         top = null;
       }
     }
+    const topClusterSize = top ? (top.cluster_size || 1) : 1;
+    const topClusterChip = topClusterSize > 1
+      ? `<span class="cluster-chip" title="Reported by ${topClusterSize} outlets">+${topClusterSize - 1}</span>` : "";
     const topCell = top
-      ? `<div class="top-signal">${tierBadge(top.tier)}<span class="dot-inline" style="background:${scoreColor(top.compound)}"></span><span style="color:${scoreColor(top.compound)}; font-variant-numeric:tabular-nums">${fmt(top.compound)}</span> · ${esc(top.title.slice(0, 95))}${top.title.length > 95 ? '…' : ''}</div>`
+      ? `<div class="top-signal">${tierBadge(top.tier)}<span class="dot-inline" style="background:${scoreColor(top.compound)}"></span><span style="color:${scoreColor(top.compound)}; font-variant-numeric:tabular-nums">${fmt(top.compound)}</span>${topClusterChip} · ${esc(top.title.slice(0, 95))}${top.title.length > 95 ? '…' : ''}</div>`
       : `<span class="muted">—</span>`;
 
     const starOn = WATCHLIST.has(c.name);
@@ -754,11 +836,13 @@ function render() {
       <td>
         <div class="score-cell">
           <span class="score-num" style="color:${color}">${fmt(c.score)}</span>
+          ${bandChip(c.score)}
           <div class="bar">
             <div class="fill" style="left:${left}%; width:${width}%; background:${color}"></div>
           </div>
         </div>
-        <div class="muted" style="font-size:11px; margin-top:3px">n=${c.count}${(bt[1] ? ` · <span class="tier-chip t1">T1 ${bt[1]}</span>` : '')}${(bt[3] ? ` · <span class="tier-chip t3">L ${bt[3]}</span>` : '')}</div>
+        <div style="margin-top:4px">${pctileChips(c)}</div>
+        <div class="muted" style="font-size:11px; margin-top:3px">n=${c.count}${c.raw_count && c.raw_count !== c.count ? `/${c.raw_count} raw` : ''}${(bt[1] ? ` · <span class="tier-chip t1">T1 ${bt[1]}</span>` : '')}${(bt[3] ? ` · <span class="tier-chip t3">L ${bt[3]}</span>` : '')}</div>
       </td>
       <td>${sparkline(c._timeline)}</td>
       <td>${deltaHtml}</td>
@@ -834,7 +918,9 @@ function openModal(name) {
       </div>
       <div style="text-align:right">
         <div class="modal-score" style="color:${scoreColor(c.score)}">${fmt(c.score)}</div>
-        <div class="muted" style="font-size:12px">avg sentiment · ${c.count} headlines</div>
+        <div style="margin-top:4px">${bandChip(c.score)}</div>
+        <div class="muted" style="font-size:12px; margin-top:4px">${c.count} distinct stor${c.count === 1 ? 'y' : 'ies'}${c.raw_count && c.raw_count !== c.count ? ` · ${c.raw_count} raw mentions` : ''}</div>
+        <div style="margin-top:4px">${pctileChips(c)}</div>
         ${c._delta !== null ? `<div class="delta-cell ${c._delta >= 0 ? 'delta-up' : 'delta-down'}" style="font-size:13px; margin-top:4px">Δ ${fmt(c._delta)} vs ${c._baseDate || 'start'}</div>` : ''}
       </div>
     </div>
@@ -940,36 +1026,81 @@ function renderHeadlineList(headlines, flt) {
   if (!headlines || headlines.length === 0) {
     return '<div class="empty-hist">No headlines.</div>';
   }
-  let rows = headlines.slice();
-  if (flt === "pos") rows = rows.filter(h => h.compound >= 0.05);
-  else if (flt === "neg") rows = rows.filter(h => h.compound <= -0.05);
-  else if (flt === "pattern") rows = rows.filter(h => h.pattern_hit);
-  else if (flt === "t1") rows = rows.filter(h => h.tier === 1);
-  else if (flt === "new") rows = rows.filter(h => {
-    const ts = pubDateMs(h.pubDate);
+  // Group by cluster_id; we render one block per cluster head with
+  // sibling outlets listed underneath.
+  const byCluster = new Map();
+  const ordered = [];
+  for (const h of headlines) {
+    const cid = h.cluster_id !== undefined ? h.cluster_id : `u${Math.random()}`;
+    if (!byCluster.has(cid)) {
+      byCluster.set(cid, { head: null, siblings: [] });
+      ordered.push(cid);
+    }
+    const g = byCluster.get(cid);
+    if (h.is_cluster_head) g.head = h;
+    else g.siblings.push(h);
+  }
+  // For any cluster missing an explicit head, promote the first item
+  for (const cid of ordered) {
+    const g = byCluster.get(cid);
+    if (!g.head) {
+      if (g.siblings.length) { g.head = g.siblings.shift(); }
+      else continue;
+    }
+  }
+
+  const clusters = ordered.map(cid => byCluster.get(cid)).filter(g => g.head);
+
+  // Filter applied at the cluster-head level
+  let filtered = clusters.slice();
+  if (flt === "pos") filtered = filtered.filter(g => g.head.compound >= 0.05);
+  else if (flt === "neg") filtered = filtered.filter(g => g.head.compound <= -0.05);
+  else if (flt === "pattern") filtered = filtered.filter(g => g.head.pattern_hit);
+  else if (flt === "t1") filtered = filtered.filter(g => g.head.tier === 1);
+  else if (flt === "new") filtered = filtered.filter(g => {
+    const ts = pubDateMs(g.head.pubDate);
     return ts && ts > LAST_VISITED_TS;
   });
-  if (rows.length === 0) return '<div class="empty-hist">None in this category.</div>';
+  if (filtered.length === 0) return '<div class="empty-hist">None in this category.</div>';
 
-  if (flt === "pattern") rows.sort((a,b) => Math.abs(b.compound) - Math.abs(a.compound));
+  // Default order: most recent cluster head first (by pubDate)
+  filtered.sort((a, b) => (pubDateMs(b.head.pubDate) || 0) - (pubDateMs(a.head.pubDate) || 0));
+  if (flt === "pattern") filtered.sort((a,b) => Math.abs(b.head.compound) - Math.abs(a.head.compound));
 
-  return rows.map(h => {
+  const renderOne = (h, isHead) => {
     const col = scoreColor(h.compound);
     const link = h.link ? `<a href="${h.link}" target="_blank" rel="noopener">${esc(h.title)}</a>` : esc(h.title);
     const origin = h.origin === "hn" ? `<span class="src-chip hn">HN</span>` : `<span class="src-chip news">news</span>`;
     const tier = tierBadge(h.tier);
     const loc = h.locale ? `<span class="loc-chip">${esc(h.locale)}</span>` : "";
     const pat = h.pattern_hit ? `<span class="loc-chip" style="color:var(--accent)">pattern</span>` : "";
+    const cat = (isHead && h.event_category && h.event_category !== "other")
+      ? `<span class="loc-chip" style="color:var(--accent)">${esc(h.event_category)}</span>` : "";
     const eng = h.engagement > 0 ? ` · <span class="engagement">${fmtNum(h.engagement)} ↑</span>` : "";
     const lowClass = (h.relevance !== undefined && h.relevance < 0.3) ? " relevance-low" : "";
     const ts = pubDateMs(h.pubDate);
     const isNew = ts && ts > LAST_VISITED_TS ? '<span class="new-badge">NEW</span>' : '';
+    return { col, link, origin, tier, loc, pat, cat, eng, lowClass, isNew };
+  };
+
+  return filtered.map(g => {
+    const h = g.head;
+    const r = renderOne(h, true);
+    const sibHtml = g.siblings.length > 0
+      ? `<details class="cluster-siblings"><summary style="cursor:pointer; font-size:11px; color:var(--muted)">+${g.siblings.length} other report${g.siblings.length > 1 ? "s" : ""} of the same story</summary>
+          ${g.siblings.map(s => {
+            const sr = renderOne(s, false);
+            return `<div>${sr.origin}${sr.tier}${sr.loc}${sr.link}<span style="color:var(--muted); font-size:11px; margin-left:6px">${esc(s.source || "")} · ${fmtDate(s.pubDate)}${sr.eng}</span></div>`;
+          }).join("")}
+        </details>`
+      : "";
     return `
-      <div class="modal-headline${lowClass}">
-        <div class="score-badge" style="color:${col}">${fmt(h.compound)}</div>
+      <div class="modal-headline${r.lowClass}">
+        <div class="score-badge" style="color:${r.col}">${fmt(h.compound)}</div>
         <div>
-          <div>${origin}${tier}${loc}${pat}${link}${isNew}</div>
-          <div class="notable-meta">${esc(h.source || "")} · ${fmtDate(h.pubDate)}${eng}</div>
+          <div>${r.origin}${r.tier}${r.cat}${r.loc}${r.pat}${r.link}${r.isNew}</div>
+          <div class="notable-meta">${esc(h.source || "")} · ${fmtDate(h.pubDate)}${r.eng}</div>
+          ${sibHtml}
         </div>
       </div>
     `;
