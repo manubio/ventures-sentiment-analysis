@@ -53,7 +53,17 @@ _EVENT_PATTERNS = [
         r"|\b(appointed|named)\s+(?:new\s+)?(ceo|cto|cfo|coo|president)\b",
         re.IGNORECASE)),
     ("fundraise",   re.compile(
-        r"\b(raises?|raised|raising|funding|secures?|secured|closed?\s+(?:a\s+)?(?:round|funding)|series\s+[a-h]\b|\bipo\b|unicorn|unicórnio|valuation|valued\s+at|captou?|capta|levanta(?:ou)?|recauda(?:d[oa]|ó)?|rodada|ronda\s+de)\b",
+        r"\b(raises?|raised|raising|funding|secures?|secured|closed?\s+(?:a\s+)?(?:round|funding)"
+        r"|series\s+[a-h]\b|\bipo\b|unicorn|unicórnio|valuation|valued\s+at"
+        r"|captou?|capta|levanta(?:ou)?|recauda(?:d[oa]|ó)?|rodada|ronda\s+de"
+        r"|boost(?:s|ed|ing)?\s+value|value\s+(?:above|of|at)\s+\$?\s*\d"
+        r"|eyes?\s+(?:a\s+)?\$?\s*\d+(?:\.\d+)?\s*(?:m|mn|million|bn|billion)\s+(?:funding|round|raise)"
+        r"|in\s+talks\s+to\s+(?:raise|secure|boost|close)"
+        r"|nears?\s+(?:a\s+)?\$?\s*\d+.*(?:valuation|billion|unicorn)"
+        r"|seeks?\s+(?:a\s+)?\$?\s*\d+.*(?:funding|round)"
+        r"|funding\s+round\s+at\s+\$"
+        r"|\$\d+[\d.,]*\s*(?:m|mn|million|bn|billion)\s+(?:at\s+)?(?:round|valuation|funding)"
+        r")\b",
         re.IGNORECASE)),
     ("acquisition", re.compile(
         r"\b(acquires?|acquired|acquisition|takeover|merges?\s+with|merged\s+with|merger|adquire|adquirió|fusión|fusão)\b",
@@ -201,6 +211,13 @@ def cluster_headlines(headlines):
     # ("raises $X" + "worth $X" talking about the same round).
     clusters_out = _merge_similar_clusters(clusters_out)
 
+    # Proximity merge: for same-company strong-signal clusters whose
+    # centers-of-mass are within 5 days, assume they're covering the
+    # same underlying event regardless of token wording. This catches
+    # "CuspAI raises $200m" + "Temasek-backed CuspAI set to boost
+    # value above $1B" — same story, no shared content tokens.
+    clusters_out = _merge_by_proximity(clusters_out)
+
     cluster_heads = []
     for idx, members in enumerate(clusters_out):
         members.sort(key=_canonical_rank)
@@ -240,6 +257,55 @@ def _jaccard(a, b):
 def _cluster_center_ts(cluster):
     ts = [_pubts(h.get("pubDate")) for h in cluster if _pubts(h.get("pubDate"))]
     return sum(ts) / len(ts) if ts else None
+
+
+def _merge_by_proximity(clusters, window_days=5):
+    """Merge clusters whose centers-of-mass are within `window_days`
+    AND either share a non-trivial event category, OR both contain at
+    least one strong-signal head (|compound| ≥ 0.3).
+
+    Rationale: within a single company, multiple distinct big events
+    within 5 days is vanishingly rare. When our token-Jaccard
+    check fails (different outlets use different wording with no
+    shared content tokens), proximity alone is a strong-enough
+    dedup signal.
+    """
+    if len(clusters) <= 1:
+        return clusters
+
+    def canonical_of(c):
+        return sorted(c, key=_canonical_rank)[0]
+
+    window_s = window_days * 86400
+    changed = True
+    while changed:
+        changed = False
+        i = 0
+        while i < len(clusters):
+            j = i + 1
+            while j < len(clusters):
+                a, b = clusters[i], clusters[j]
+                ca = _cluster_center_ts(a)
+                cb = _cluster_center_ts(b)
+                if not (ca and cb) or abs(ca - cb) > window_s:
+                    j += 1
+                    continue
+                ha = canonical_of(a)
+                hb = canonical_of(b)
+                # Same category (not "other") → merge
+                same_cat = (ha.get("event_category") == hb.get("event_category")
+                            and ha.get("event_category") not in (None, "other"))
+                # Both strong signal → merge
+                both_strong = (abs(ha.get("compound", 0)) >= 0.3
+                               and abs(hb.get("compound", 0)) >= 0.3)
+                if same_cat or both_strong:
+                    a.extend(b)
+                    clusters.pop(j)
+                    changed = True
+                else:
+                    j += 1
+            i += 1
+    return clusters
 
 
 def _merge_similar_clusters(clusters):

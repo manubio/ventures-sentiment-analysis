@@ -2,6 +2,7 @@ import glob
 import json
 import math
 import os
+import re
 import sys
 import urllib.parse
 import urllib.request
@@ -137,12 +138,61 @@ def fetch_task(kind, args, company):
 
 # ---------- Scoring ----------
 
-def score_headline(title):
-    """Score a single headline: pattern override wins over VADER."""
-    override = pattern_rules.override_score(title)
+# Clause delimiters: comma not followed by a digit (to preserve PT/ES
+# decimal formatting like "R$ 2,5 bi"), plus conjunctions and common
+# sentence-joining punctuation.
+_CLAUSE_SPLIT_RX = re.compile(r",(?!\d)|\s+(?:e|and|y|but|however|while)\s+|;|\s*·\s*|:\s", re.IGNORECASE)
+
+
+def _company_clause(company, title):
+    """If the title has multiple clauses (portfolio roundup headlines
+    like "C6 lucra R$2.5bi, Neon vira jogo e Creditas amplia perdas")
+    and the company name appears in only ONE of them, return just
+    that clause so sentiment reflects what was said about *this*
+    company, not its peers.
+    """
+    if not title:
+        return title
+    segments = [s.strip() for s in _CLAUSE_SPLIT_RX.split(title) if s.strip()]
+    if len(segments) <= 1:
+        return title
+
+    name = (company.get("name") or "").lower()
+    variants = {name}
+    for t in re.split(r"[\s\-/.&]+", name):
+        if len(t) > 2:
+            variants.add(t)
+    dom = (company.get("website") or "").split(".")[0].lower()
+    if dom and len(dom) > 2:
+        variants.add(dom)
+
+    matching = []
+    for seg in segments:
+        seg_l = seg.lower()
+        # whole-word-ish check
+        for v in variants:
+            if re.search(rf"\b{re.escape(v)}\b", seg_l):
+                matching.append(seg)
+                break
+
+    if len(matching) == 1 and len(matching[0]) >= 6:
+        return matching[0]
+    return title
+
+
+def score_headline(title, company=None):
+    """Score a single headline: pattern override wins over VADER.
+
+    When `company` is provided, we first try to isolate the clause
+    that actually talks about this company — so "C6 lucra, Creditas
+    amplia perdas" scores the losses clause for Creditas instead of
+    the full (misleadingly positive) aggregate headline.
+    """
+    clause = _company_clause(company, title) if company else title
+    override = pattern_rules.override_score(clause)
     if override is not None:
-        return override, True
-    return ANALYZER.polarity_scores(title)["compound"], False
+        return override, True, clause
+    return ANALYZER.polarity_scores(clause)["compound"], False, clause
 
 
 def parse_pubdate(s):
@@ -228,7 +278,7 @@ def score_company(company, items, relevancer, now_ts):
         if not relevant:
             dropped += 1
             continue
-        compound, pattern_hit = score_headline(h["title"])
+        compound, pattern_hit, clause_used = score_headline(h["title"], company)
         tier = sources.tier_for(h.get("source"), h.get("link"))
         scored.append({
             **h,
@@ -236,6 +286,9 @@ def score_company(company, items, relevancer, now_ts):
             "relevance": round(confidence, 3),
             "pattern_hit": pattern_hit,
             "tier": tier,
+            # Preserve the clause we actually scored so the UI can show
+            # "scored on: <clause>" when it differs from the full title.
+            "scored_clause": clause_used if clause_used != h["title"] else None,
         })
 
     if not scored:

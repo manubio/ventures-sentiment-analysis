@@ -81,6 +81,8 @@ PATTERNS_EN = [
     (r'\b(delays?|postpones?|pushed\s+back)\s+(ipo|launch|rollout)', -0.50),
     (r'\bwarns?\s+of\s+(losses|bankruptcy|layoffs|slowdown)', -0.70),
     (r'\bunder\s+(investigation|probe|scrutiny)', -0.60),
+    (r'\b(widen|widens|widened|widening|grow(s|ing)?|increased?)\s+(?:its\s+)?losses', -0.75),
+    (r'\b(mounting|ballooning|deepening)\s+losses', -0.75),
 ]
 
 # Portuguese & Spanish patterns (lighter — just the high-impact flips)
@@ -104,6 +106,9 @@ PATTERNS_PT = [
     (r'\bvazamento\s+de\s+dados', -0.80),
     (r'\bfraude\s+(de|em|acusado)', -0.90),
     (r'\b(ceo|fundador|cto)\s+(é\s+demitido|renuncia|deixa|sai)', -0.55),
+    # "amplia perdas" / "aumenta prejuízo" — widening losses
+    (r'\b(amplia|aumenta|cresce|dobra)\s+(?:as\s+|o\s+|suas?\s+|seus?\s+)?(perdas|prejuízos?|rombo)', -0.75),
+    (r'\b(perdas|prejuízos?)\s+(crescem|aumentam|disparam|triplicam)', -0.75),
 ]
 
 PATTERNS_ES = [
@@ -121,6 +126,7 @@ PATTERNS_ES = [
     (r'\bfiltración\s+de\s+datos', -0.80),
     (r'\bfraude\s+(de|en|acusado)', -0.90),
     (r'\b(ceo|fundador)\s+(despedido|renuncia|se\s+va)', -0.55),
+    (r'\b(amplia|aumenta|crece)\s+(?:las\s+|sus\s+)?pérdidas', -0.75),
 ]
 
 _COMPILED = [
