@@ -41,12 +41,26 @@ new says said news per via amid plus vs say
 
 _WORD_RE = re.compile(r"[A-Za-zÀ-ÿ][A-Za-zÀ-ÿ0-9'\-]*", re.UNICODE)
 
-FUNDING_WHITELIST_RX = re.compile(
+# "Strict" structural events: when a headline starts with the company
+# name and matches one of these, we accept even without topic overlap.
+# These are the events where "CompanyName <event>" is unambiguous
+# (funding, M&A, failure, legal) — *not* operational news like
+# "launches" or "expands" which a municipality can also do.
+STRICT_EVENT_RX = re.compile(
     r"\b("
-    r"raises?|raised|secured?|closed?|funding|series\s+[a-h]|ipo|acquire[sd]?|"
-    r"unicorn|valuation|capta|captou|levanta|levantou|recauda|recaudó|rodada|"
-    r"ronda|adquire|adquiere|despidos?|demissões?|layoffs?|bankruptcy|quiebra|"
-    r"falência|lawsuit|breach|hacked|fired|resigns?"
+    r"raises?|raised|raising|secures?|secured|closed?\s+(?:a\s+)?(?:round|funding)"
+    r"|series\s+[a-h]\b|\bipo\b|unicorn|valuation|valued\s+at"
+    r"|boost(?:s|ed|ing)?\s+value|in\s+talks\s+to\s+(?:raise|secure|boost)"
+    r"|eyes?\s+(?:a\s+)?\$|seeks?\s+(?:a\s+)?\$"
+    r"|acquires?|acquired|acquisition|takeover|merges?\s+with|merger"
+    r"|lawsuits?|sued|class[-\s]?action|settles?|settlement"
+    r"|bankruptcy|insolvent|insolvency|chapter\s+11|files?\s+for"
+    r"|(data|security)\s+breach|hacked|fraud|scandal"
+    r"|layoffs?|lays?\s+off|lay(?:\s+off|ing\s+off)|mass\s+layoffs"
+    r"|ceo\s+(?:resigns?|fired|ousted|steps?\s+down)"
+    r"|capta|captou|levanta(?:ou)?|recauda(?:d[oa]|ó)?|rodada|ronda\s+de"
+    r"|adquire|adquiere|despidos?|demissões?|quiebra|falência"
+    r"|amplia\s+perdas|widens?\s+losses"
     r")\b",
     re.IGNORECASE,
 )
@@ -66,15 +80,20 @@ class RelevanceScorer:
 
     def __init__(self, companies):
         self.companies = companies
-        # One TOPIC doc per company: description + region ONLY. We
-        # deliberately exclude the company name and website so that
+        # One TOPIC doc per company: description + region + keywords.
+        # We deliberately exclude the company name and website so that
         # topic-overlap cosine reflects what the company DOES, not whether
-        # a headline happens to contain the brand word.
+        # a headline happens to contain the brand word. The `keywords`
+        # field (in companies.json) enriches this with distinguishing
+        # tokens like "chatbot WhatsApp" for Luzia so funding headlines
+        # mentioning the sector still register overlap.
         self._topic_docs = {}
         for c in companies:
             topic_doc = " ".join([
                 c.get("description", ""),
                 c.get("region", ""),
+                c.get("keywords", ""),
+                c.get("type", "") or "",
             ])
             self._topic_docs[c["name"]] = topic_doc
 
@@ -136,18 +155,24 @@ class RelevanceScorer:
     def score(self, company, headline):
         """Return (relevant_bool, confidence_float).
 
-        Layered filter:
+        Topic-first filter — a name match alone is NEVER enough:
+
           1. Hard gate — name variant in title OR domain in URL.
           2. Domain in URL → accept (strongest possible signal).
-          3. For *ambiguous* names (common English words like Honor,
-             Rain, Recur — flagged by having a `search` override):
-               - require name in first 5 tokens, OR
-               - require strong topic cosine (≥ 0.10).
-          4. For distinctive brand names:
-               - accept if name anywhere early (< 5 tokens), OR
-               - accept on funding/M&A whitelist, OR
-               - accept on any topic cosine overlap (≥ 0.05).
-          5. Otherwise drop.
+          3. Topic cosine ≥ 0.05 → accept (the headline is about the
+             same subject area as the company). The company's
+             topic vector is built from description + region + keywords
+             + type; the company name itself is excluded.
+          4. Strict-event fallback: name appears at position 0 AND the
+             title matches STRICT_EVENT_RX (funding / M&A / layoffs /
+             bankruptcy / lawsuit / breach / fraud). This catches
+             formulaic headlines like "Meesho raises $50M" where the
+             topic vector may not overlap with the funding-event
+             phrasing, but position 0 + structural event is strong
+             enough evidence.
+          5. Otherwise drop — a name match without topic evidence is a
+             likely homograph (LUZIA the restaurant, Santa Luzia the
+             city, Honor the smartphone brand, Rain the weather, etc.).
         """
         title = headline.get("title", "") or ""
         link = (headline.get("link") or "").lower()
@@ -159,31 +184,23 @@ class RelevanceScorer:
         domain = (company.get("website") or "").lower()
         dom_hit = bool(domain) and domain in link
 
+        # 1. Hard gate
         if not name_positions and not dom_hit:
             return (False, 0.0)
 
+        # 2. Domain in URL — strongest signal, always accept
         if dom_hit:
             return (True, 0.85)
 
-        # An `explicit search override implies the user flagged the name
-        # as ambiguous (Honor, Rain, Recur, …). Apply stricter filters.
-        ambiguous = bool(company.get("search"))
+        # 3. Topic cosine
         tvec = self._vectorize(title)
         cos = self._cosine(tvec, self._company_vecs[company["name"]])
-        early = bool(name_positions) and name_positions[0] < 5
-
-        if ambiguous:
-            if early:
-                return (True, max(0.55, cos))
-            if cos >= 0.10:
-                return (True, cos)
-            return (False, 0.0)
-
-        # Distinctive brand name
-        if early:
-            return (True, max(0.55, cos))
-        if FUNDING_WHITELIST_RX.search(title):
-            return (True, 0.40)
         if cos >= 0.05:
             return (True, cos)
+
+        # 4. Strict-event fallback: name at position 0 + structural event
+        if name_positions and name_positions[0] == 0 and STRICT_EVENT_RX.search(title):
+            return (True, 0.40)
+
+        # 5. Drop
         return (False, 0.0)
