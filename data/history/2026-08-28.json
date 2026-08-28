@@ -1,0 +1,790 @@
+{
+  "date": "2026-08-28",
+  "generated_at": "2026-08-28T19:19:47.418970+00:00",
+  "summary": {
+    "average_score": 0.296,
+    "covered": 52,
+    "dropped_irrelevant": 1322,
+    "locale_totals": {
+      "en": 114,
+      "en-AU": 4,
+      "en-GB": 13,
+      "en-IN": 155,
+      "en-SG": 61,
+      "en-US": 145,
+      "es-419": 43,
+      "pt-BR": 17
+    },
+    "negative": 2,
+    "neutral": 6,
+    "no_coverage": 41,
+    "positive": 44,
+    "region_average": {
+      "Australia": 0.336,
+      "EU": 0.221,
+      "GCC": 0.467,
+      "India": 0.278,
+      "LatAm": 0.309,
+      "Other": 0.154,
+      "SE Asia": 0.351,
+      "US": 0.304
+    },
+    "source_totals": {
+      "hn": 114,
+      "news": 438
+    },
+    "tier_totals": {
+      "1": 70,
+      "2": 464,
+      "3": 18
+    },
+    "total_clusters": 380,
+    "total_mentions": 552
+  },
+  "companies": {
+    "Azos": {
+      "score": 0.8,
+      "count": 1,
+      "pos": 1,
+      "neu": 0,
+      "neg": 0,
+      "engagement": 0
+    },
+    "Mevo": {
+      "score": 0.8,
+      "count": 1,
+      "pos": 1,
+      "neu": 0,
+      "neg": 0,
+      "engagement": 0
+    },
+    "zypl": {
+      "score": 0.8,
+      "count": 1,
+      "pos": 1,
+      "neu": 0,
+      "neg": 0,
+      "engagement": 0
+    },
+    "Honor": {
+      "score": 0.74,
+      "count": 15,
+      "pos": 15,
+      "neu": 0,
+      "neg": 0,
+      "engagement": 92
+    },
+    "Beauty Haul": {
+      "score": 0.702,
+      "count": 19,
+      "pos": 19,
+      "neu": 0,
+      "neg": 0,
+      "engagement": 0
+    },
+    "Stockbit": {
+      "score": 0.632,
+      "count": 2,
+      "pos": 2,
+      "neu": 0,
+      "neg": 0,
+      "engagement": 0
+    },
+    "Wayflyer": {
+      "score": 0.587,
+      "count": 4,
+      "pos": 4,
+      "neu": 0,
+      "neg": 0,
+      "engagement": 2
+    },
+    "Lastro": {
+      "score": 0.542,
+      "count": 1,
+      "pos": 1,
+      "neu": 0,
+      "neg": 0,
+      "engagement": 0
+    },
+    "Deccan AI": {
+      "score": 0.524,
+      "count": 4,
+      "pos": 4,
+      "neu": 0,
+      "neg": 0,
+      "engagement": 0
+    },
+    "Mensa Brands": {
+      "score": 0.47,
+      "count": 5,
+      "pos": 5,
+      "neu": 0,
+      "neg": 0,
+      "engagement": 0
+    },
+    "Neara": {
+      "score": 0.464,
+      "count": 2,
+      "pos": 2,
+      "neu": 0,
+      "neg": 0,
+      "engagement": 0
+    },
+    "SILQ": {
+      "score": 0.459,
+      "count": 3,
+      "pos": 3,
+      "neu": 0,
+      "neg": 0,
+      "engagement": 0
+    },
+    "Arivihan": {
+      "score": 0.411,
+      "count": 2,
+      "pos": 2,
+      "neu": 0,
+      "neg": 0,
+      "engagement": 0
+    },
+    "Moove": {
+      "score": 0.4,
+      "count": 2,
+      "pos": 1,
+      "neu": 1,
+      "neg": 0,
+      "engagement": 0
+    },
+    "DeHaat": {
+      "score": 0.389,
+      "count": 2,
+      "pos": 1,
+      "neu": 1,
+      "neg": 0,
+      "engagement": 0
+    },
+    "Ema": {
+      "score": 0.376,
+      "count": 2,
+      "pos": 2,
+      "neu": 0,
+      "neg": 0,
+      "engagement": 0
+    },
+    "Emergent": {
+      "score": 0.366,
+      "count": 10,
+      "pos": 7,
+      "neu": 2,
+      "neg": 1,
+      "engagement": 0
+    },
+    "Intella": {
+      "score": 0.365,
+      "count": 3,
+      "pos": 2,
+      "neu": 1,
+      "neg": 0,
+      "engagement": 0
+    },
+    "FiberSense": {
+      "score": 0.361,
+      "count": 1,
+      "pos": 1,
+      "neu": 0,
+      "neg": 0,
+      "engagement": 0
+    },
+    "Captain Fresh": {
+      "score": 0.359,
+      "count": 11,
+      "pos": 10,
+      "neu": 0,
+      "neg": 1,
+      "engagement": 0
+    },
+    "Bilt": {
+      "score": 0.356,
+      "count": 17,
+      "pos": 12,
+      "neu": 3,
+      "neg": 2,
+      "engagement": 5
+    },
+    "Spotdraft": {
+      "score": 0.35,
+      "count": 3,
+      "pos": 2,
+      "neu": 1,
+      "neg": 0,
+      "engagement": 5
+    },
+    "Endowus": {
+      "score": 0.286,
+      "count": 12,
+      "pos": 8,
+      "neu": 4,
+      "neg": 0,
+      "engagement": 0
+    },
+    "Meesho": {
+      "score": 0.285,
+      "count": 12,
+      "pos": 7,
+      "neu": 4,
+      "neg": 1,
+      "engagement": 11
+    },
+    "BandLab": {
+      "score": 0.27,
+      "count": 6,
+      "pos": 3,
+      "neu": 3,
+      "neg": 0,
+      "engagement": 88
+    },
+    "Omnea": {
+      "score": 0.255,
+      "count": 8,
+      "pos": 4,
+      "neu": 4,
+      "neg": 0,
+      "engagement": 0
+    },
+    "CuspAI": {
+      "score": 0.252,
+      "count": 9,
+      "pos": 6,
+      "neu": 3,
+      "neg": 0,
+      "engagement": 0
+    },
+    "Vegrow": {
+      "score": 0.25,
+      "count": 1,
+      "pos": 1,
+      "neu": 0,
+      "neg": 0,
+      "engagement": 0
+    },
+    "Wiom": {
+      "score": 0.25,
+      "count": 1,
+      "pos": 1,
+      "neu": 0,
+      "neg": 0,
+      "engagement": 0
+    },
+    "Urban Company": {
+      "score": 0.24,
+      "count": 8,
+      "pos": 3,
+      "neu": 4,
+      "neg": 1,
+      "engagement": 4
+    },
+    "Thndr": {
+      "score": 0.237,
+      "count": 8,
+      "pos": 6,
+      "neu": 2,
+      "neg": 0,
+      "engagement": 0
+    },
+    "PharmEasy": {
+      "score": 0.214,
+      "count": 17,
+      "pos": 10,
+      "neu": 6,
+      "neg": 1,
+      "engagement": 5
+    },
+    "Virgio": {
+      "score": 0.203,
+      "count": 4,
+      "pos": 2,
+      "neu": 2,
+      "neg": 0,
+      "engagement": 0
+    },
+    "Shipper": {
+      "score": 0.202,
+      "count": 1,
+      "pos": 1,
+      "neu": 0,
+      "neg": 0,
+      "engagement": 0
+    },
+    "Plerion": {
+      "score": 0.184,
+      "count": 7,
+      "pos": 4,
+      "neu": 2,
+      "neg": 1,
+      "engagement": 595
+    },
+    "Rain": {
+      "score": 0.18,
+      "count": 2,
+      "pos": 1,
+      "neu": 1,
+      "neg": 0,
+      "engagement": 0
+    },
+    "Dott": {
+      "score": 0.173,
+      "count": 7,
+      "pos": 3,
+      "neu": 3,
+      "neg": 1,
+      "engagement": 0
+    },
+    "Platzi": {
+      "score": 0.171,
+      "count": 21,
+      "pos": 6,
+      "neu": 15,
+      "neg": 0,
+      "engagement": 619
+    },
+    "ElasticRun": {
+      "score": 0.162,
+      "count": 6,
+      "pos": 4,
+      "neu": 1,
+      "neg": 1,
+      "engagement": 5
+    },
+    "Taktile": {
+      "score": 0.116,
+      "count": 14,
+      "pos": 4,
+      "neu": 7,
+      "neg": 3,
+      "engagement": 47
+    },
+    "Corti": {
+      "score": 0.101,
+      "count": 4,
+      "pos": 1,
+      "neu": 3,
+      "neg": 0,
+      "engagement": 4
+    },
+    "Equal": {
+      "score": 0.085,
+      "count": 7,
+      "pos": 1,
+      "neu": 4,
+      "neg": 2,
+      "engagement": 0
+    },
+    "Klar": {
+      "score": 0.069,
+      "count": 16,
+      "pos": 2,
+      "neu": 14,
+      "neg": 0,
+      "engagement": 0
+    },
+    "DappRadar": {
+      "score": 0.063,
+      "count": 6,
+      "pos": 2,
+      "neu": 4,
+      "neg": 0,
+      "engagement": 19
+    },
+    "Spendflo": {
+      "score": 0.04,
+      "count": 5,
+      "pos": 1,
+      "neu": 4,
+      "neg": 0,
+      "engagement": 0
+    },
+    "Vastu": {
+      "score": 0.037,
+      "count": 4,
+      "pos": 2,
+      "neu": 1,
+      "neg": 1,
+      "engagement": 0
+    },
+    "Luzia": {
+      "score": 0.033,
+      "count": 10,
+      "pos": 1,
+      "neu": 9,
+      "neg": 0,
+      "engagement": 0
+    },
+    "watchTowr": {
+      "score": 0.016,
+      "count": 26,
+      "pos": 8,
+      "neu": 11,
+      "neg": 7,
+      "engagement": 3018
+    },
+    "99 Minutos": {
+      "score": 0.0,
+      "count": 0,
+      "pos": 0,
+      "neu": 0,
+      "neg": 0,
+      "engagement": 0
+    },
+    "Advolve": {
+      "score": 0.0,
+      "count": 0,
+      "pos": 0,
+      "neu": 0,
+      "neg": 0,
+      "engagement": 0
+    },
+    "Anecdote": {
+      "score": 0.0,
+      "count": 0,
+      "pos": 0,
+      "neu": 0,
+      "neg": 0,
+      "engagement": 0
+    },
+    "Avant Arte": {
+      "score": 0.0,
+      "count": 0,
+      "pos": 0,
+      "neu": 0,
+      "neg": 0,
+      "engagement": 0
+    },
+    "BeConfident": {
+      "score": 0.0,
+      "count": 0,
+      "pos": 0,
+      "neu": 0,
+      "neg": 0,
+      "engagement": 0
+    },
+    "Biome Makers": {
+      "score": 0.0,
+      "count": 0,
+      "pos": 0,
+      "neu": 0,
+      "neg": 0,
+      "engagement": 0
+    },
+    "Brainfish": {
+      "score": 0.0,
+      "count": 0,
+      "pos": 0,
+      "neu": 0,
+      "neg": 0,
+      "engagement": 0
+    },
+    "Chocolate": {
+      "score": 0.0,
+      "count": 0,
+      "pos": 0,
+      "neu": 0,
+      "neg": 0,
+      "engagement": 0
+    },
+    "Code Karma": {
+      "score": 0.0,
+      "count": 0,
+      "pos": 0,
+      "neu": 0,
+      "neg": 0,
+      "engagement": 0
+    },
+    "Constantinople": {
+      "score": 0.0,
+      "count": 0,
+      "pos": 0,
+      "neu": 0,
+      "neg": 0,
+      "engagement": 0
+    },
+    "Creditas": {
+      "score": 0.0,
+      "count": 2,
+      "pos": 0,
+      "neu": 2,
+      "neg": 0,
+      "engagement": 0
+    },
+    "Detect Technologies": {
+      "score": 0.0,
+      "count": 0,
+      "pos": 0,
+      "neu": 0,
+      "neg": 0,
+      "engagement": 0
+    },
+    "Every Company": {
+      "score": 0.0,
+      "count": 0,
+      "pos": 0,
+      "neu": 0,
+      "neg": 0,
+      "engagement": 0
+    },
+    "Flexion": {
+      "score": 0.0,
+      "count": 0,
+      "pos": 0,
+      "neu": 0,
+      "neg": 0,
+      "engagement": 0
+    },
+    "Fundamental Research Labs": {
+      "score": 0.0,
+      "count": 0,
+      "pos": 0,
+      "neu": 0,
+      "neg": 0,
+      "engagement": 0
+    },
+    "GrowXCD": {
+      "score": 0.0,
+      "count": 0,
+      "pos": 0,
+      "neu": 0,
+      "neg": 0,
+      "engagement": 0
+    },
+    "Immutable": {
+      "score": 0.0,
+      "count": 0,
+      "pos": 0,
+      "neu": 0,
+      "neg": 0,
+      "engagement": 0
+    },
+    "Incognia": {
+      "score": 0.0,
+      "count": 0,
+      "pos": 0,
+      "neu": 0,
+      "neg": 0,
+      "engagement": 0
+    },
+    "Iniciador": {
+      "score": 0.0,
+      "count": 0,
+      "pos": 0,
+      "neu": 0,
+      "neg": 0,
+      "engagement": 0
+    },
+    "Kismet": {
+      "score": 0.0,
+      "count": 0,
+      "pos": 0,
+      "neu": 0,
+      "neg": 0,
+      "engagement": 0
+    },
+    "Lyskraft": {
+      "score": 0.0,
+      "count": 0,
+      "pos": 0,
+      "neu": 0,
+      "neg": 0,
+      "engagement": 0
+    },
+    "Mango Sciences": {
+      "score": 0.0,
+      "count": 0,
+      "pos": 0,
+      "neu": 0,
+      "neg": 0,
+      "engagement": 0
+    },
+    "Martian": {
+      "score": 0.0,
+      "count": 0,
+      "pos": 0,
+      "neu": 0,
+      "neg": 0,
+      "engagement": 0
+    },
+    "Modelcode.ai": {
+      "score": 0.0,
+      "count": 0,
+      "pos": 0,
+      "neu": 0,
+      "neg": 0,
+      "engagement": 0
+    },
+    "Moova": {
+      "score": 0.0,
+      "count": 0,
+      "pos": 0,
+      "neu": 0,
+      "neg": 0,
+      "engagement": 0
+    },
+    "Neuralace": {
+      "score": 0.0,
+      "count": 0,
+      "pos": 0,
+      "neu": 0,
+      "neg": 0,
+      "engagement": 0
+    },
+    "Onsi": {
+      "score": 0.0,
+      "count": 0,
+      "pos": 0,
+      "neu": 0,
+      "neg": 0,
+      "engagement": 0
+    },
+    "Orbii": {
+      "score": 0.0,
+      "count": 0,
+      "pos": 0,
+      "neu": 0,
+      "neg": 0,
+      "engagement": 0
+    },
+    "Prime Roots": {
+      "score": 0.0,
+      "count": 0,
+      "pos": 0,
+      "neu": 0,
+      "neg": 0,
+      "engagement": 0
+    },
+    "Qureos": {
+      "score": 0.0,
+      "count": 0,
+      "pos": 0,
+      "neu": 0,
+      "neg": 0,
+      "engagement": 0
+    },
+    "Recur": {
+      "score": 0.0,
+      "count": 0,
+      "pos": 0,
+      "neu": 0,
+      "neg": 0,
+      "engagement": 0
+    },
+    "Sandbox": {
+      "score": 0.0,
+      "count": 0,
+      "pos": 0,
+      "neu": 0,
+      "neg": 0,
+      "engagement": 0
+    },
+    "Soku": {
+      "score": 0.0,
+      "count": 0,
+      "pos": 0,
+      "neu": 0,
+      "neg": 0,
+      "engagement": 0
+    },
+    "Superside": {
+      "score": 0.0,
+      "count": 0,
+      "pos": 0,
+      "neu": 0,
+      "neg": 0,
+      "engagement": 0
+    },
+    "Tierra": {
+      "score": 0.0,
+      "count": 0,
+      "pos": 0,
+      "neu": 0,
+      "neg": 0,
+      "engagement": 0
+    },
+    "Tonik": {
+      "score": 0.0,
+      "count": 0,
+      "pos": 0,
+      "neu": 0,
+      "neg": 0,
+      "engagement": 0
+    },
+    "Treinta": {
+      "score": 0.0,
+      "count": 0,
+      "pos": 0,
+      "neu": 0,
+      "neg": 0,
+      "engagement": 0
+    },
+    "Unseen": {
+      "score": 0.0,
+      "count": 0,
+      "pos": 0,
+      "neu": 0,
+      "neg": 0,
+      "engagement": 0
+    },
+    "Ursula": {
+      "score": 0.0,
+      "count": 0,
+      "pos": 0,
+      "neu": 0,
+      "neg": 0,
+      "engagement": 0
+    },
+    "Voa Health": {
+      "score": 0.0,
+      "count": 0,
+      "pos": 0,
+      "neu": 0,
+      "neg": 0,
+      "engagement": 0
+    },
+    "Zest Equity": {
+      "score": 0.0,
+      "count": 0,
+      "pos": 0,
+      "neu": 0,
+      "neg": 0,
+      "engagement": 0
+    },
+    "qeen.ai": {
+      "score": 0.0,
+      "count": 0,
+      "pos": 0,
+      "neu": 0,
+      "neg": 0,
+      "engagement": 0
+    },
+    "Zapia": {
+      "score": -0.038,
+      "count": 18,
+      "pos": 2,
+      "neu": 12,
+      "neg": 4,
+      "engagement": 0
+    },
+    "PromptArmor": {
+      "score": -0.06,
+      "count": 23,
+      "pos": 3,
+      "neu": 15,
+      "neg": 5,
+      "engagement": 5016
+    },
+    "Bykea": {
+      "score": -0.152,
+      "count": 4,
+      "pos": 1,
+      "neu": 1,
+      "neg": 2,
+      "engagement": 1
+    }
+  }
+}
